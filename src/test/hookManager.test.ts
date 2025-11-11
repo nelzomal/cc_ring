@@ -4,6 +4,7 @@ import * as os from "os";
 import * as path from "path";
 import * as vscode from "vscode";
 import { HookManager, HOOK_ID } from "../hookManager";
+import { mockL10n, restoreL10n } from "./l10nTestHelper";
 
 suite("HookManager Test Suite", () => {
   let context: vscode.ExtensionContext;
@@ -52,6 +53,9 @@ suite("HookManager Test Suite", () => {
   };
 
   setup(async () => {
+    // Mock l10n for tests
+    mockL10n();
+
     // Create temporary directory for test
     testHooksDir = fs.mkdtempSync(
       path.join(os.tmpdir(), "cc-ring-integration-test-")
@@ -87,6 +91,9 @@ suite("HookManager Test Suite", () => {
     if (fs.existsSync(testHooksDir)) {
       fs.rmSync(testHooksDir, { recursive: true, force: true });
     }
+
+    // Restore l10n
+    restoreL10n();
   });
 
   test("Install hook creates hook script file", async function () {

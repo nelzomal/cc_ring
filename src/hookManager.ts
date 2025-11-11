@@ -81,7 +81,7 @@ export class HookManager {
 
             fs.writeFileSync(configPath, JSON.stringify(configData, null, 2));
         } catch (error) {
-            throw new Error(`Failed to write config file: ${error}`);
+            throw new Error(vscode.l10n.t('failedToWriteConfig', String(error)));
         }
     }
 
@@ -151,10 +151,7 @@ exit 0
                     JSON.parse(content);
                 } catch (error) {
                     // Fail fast - do not create any files
-                    throw new Error(
-                        'Cannot install: settings.json is corrupted. ' +
-                        'Please fix or delete ~/.claude/settings.json manually.'
-                    );
+                    throw new Error(vscode.l10n.t('cannotInstallCorruptedSettings'));
                 }
             }
 
@@ -179,7 +176,11 @@ exit 0
 
             console.log('Hook installed successfully at:', hookScriptPath);
         } catch (error) {
-            throw new Error(`Failed to install hook: ${error}`);
+            // If error is already an Error object with our message, re-throw as-is
+            if (error instanceof Error) {
+                throw error;
+            }
+            throw new Error(vscode.l10n.t('failedToInstallHookManager', String(error)));
         }
     }
 
@@ -203,10 +204,7 @@ exit 0
                 settings = JSON.parse(content);
             } catch (error) {
                 // Fail fast - do not modify corrupted settings
-                throw new Error(
-                    'Cannot install: settings.json is corrupted. ' +
-                    'Please fix or delete ~/.claude/settings.json manually.'
-                );
+                throw new Error(vscode.l10n.t('cannotInstallCorruptedSettings'));
             }
         }
 
@@ -276,16 +274,16 @@ exit 0
             if (!settingsCleanedUp) {
                 // Files deleted successfully but settings.json was skipped
                 console.log('Hook files removed (settings.json was skipped due to corruption)');
-                throw new Error('SETTINGS_CORRUPTED: Hook files removed successfully, but settings.json appears corrupted and was left untouched. You may need to manually edit ~/.claude/settings.json');
+                throw new Error(vscode.l10n.t('settingsCorruptedWarning'));
             }
 
             console.log('Hook uninstalled successfully');
         } catch (error) {
-            // Re-throw settings corruption warnings as-is
-            if (error instanceof Error && error.message.startsWith('SETTINGS_CORRUPTED:')) {
+            // Re-throw Error objects as-is (including settings corruption warnings)
+            if (error instanceof Error) {
                 throw error;
             }
-            throw new Error(`Failed to uninstall hook: ${error}`);
+            throw new Error(vscode.l10n.t('failedToUninstallHookManager', String(error)));
         }
     }
 

@@ -1,0 +1,18 @@
+{
+  "displayName": "CC Ring - Claude Code Sound Notifier",
+  "description": "Play notification sounds when Claude Code completes tasks",
+  "configuration.title": "CC Ring",
+  "config.enabled.description": "Enable sound notifications when Claude Code completes tasks",
+  "config.volume.description": "Notification volume (0-100%)",
+  "config.sound.description": "Sound to play on completion",
+  "config.sound.complete": "Standard completion sound",
+  "config.sound.subtle": "Quiet subtle sound",
+  "config.sound.notification": "Alert notification sound",
+  "config.sound.custom": "Use custom sound file",
+  "config.customSoundPath.description": "Path to custom sound file (only used when sound is set to 'custom')",
+  "command.testSound": "CC Ring: Test Notification Sound",
+  "command.selectCustomSound": "CC Ring: Select Custom Sound File",
+  "command.installHook": "CC Ring: Install/Reinstall Hook",
+  "command.uninstallHook": "CC Ring: Uninstall Hook",
+  "command.showStatus": "CC Ring: Show Status"
+}

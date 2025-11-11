@@ -1,10 +1,11 @@
 {
   "name": "cc-ring",
-  "displayName": "CC Ring - Claude Code Sound Notifier",
-  "description": "Play notification sounds when Claude Code completes tasks",
-  "version": "0.1.1",
+  "displayName": "%displayName%",
+  "description": "%description%",
+  "version": "0.2.0",
   "publisher": "nelzomal",
   "license": "MIT",
+  "l10n": "./l10n",
   "repository": {
     "type": "git",
     "url": "https://github.com/nelzomal/cc_ring"
@@ -37,12 +38,12 @@
   "main": "./dist/extension.js",
   "contributes": {
     "configuration": {
-      "title": "CC Ring",
+      "title": "%configuration.title%",
       "properties": {
         "cc-ring.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable sound notifications when Claude Code completes tasks",
+          "description": "%config.enabled.description%",
           "order": 1
         },
         "cc-ring.volume": {
@@ -50,7 +51,7 @@
           "default": 50,
           "minimum": 0,
           "maximum": 100,
-          "description": "Notification volume (0-100%)",
+          "description": "%config.volume.description%",
           "order": 2
         },
         "cc-ring.sound": {
@@ -63,18 +64,18 @@
             "custom"
           ],
           "enumDescriptions": [
-            "Standard completion sound",
-            "Quiet subtle sound",
-            "Alert notification sound",
-            "Use custom sound file"
+            "%config.sound.complete%",
+            "%config.sound.subtle%",
+            "%config.sound.notification%",
+            "%config.sound.custom%"
           ],
-          "description": "Sound to play on completion",
+          "description": "%config.sound.description%",
           "order": 3
         },
         "cc-ring.customSoundPath": {
           "type": "string",
           "default": "",
-          "description": "Path to custom sound file (only used when sound is set to 'custom')",
+          "description": "%config.customSoundPath.description%",
           "order": 4
         }
       }
@@ -82,23 +83,23 @@
     "commands": [
       {
         "command": "cc-ring.testSound",
-        "title": "CC Ring: Test Notification Sound"
+        "title": "%command.testSound%"
       },
       {
         "command": "cc-ring.selectCustomSound",
-        "title": "CC Ring: Select Custom Sound File"
+        "title": "%command.selectCustomSound%"
       },
       {
         "command": "cc-ring.installHook",
-        "title": "CC Ring: Install/Reinstall Hook"
+        "title": "%command.installHook%"
       },
       {
         "command": "cc-ring.uninstallHook",
-        "title": "CC Ring: Uninstall Hook"
+        "title": "%command.uninstallHook%"
       },
       {
         "command": "cc-ring.showStatus",
-        "title": "CC Ring: Show Status"
+        "title": "%command.showStatus%"
       }
     ]
   },
@@ -111,12 +112,14 @@
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "l10n-extract": "npx @vscode/l10n-dev export -o ./l10n ./src"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
     "@types/vscode": "^1.105.0",
+    "@vscode/l10n-dev": "^0.0.35",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.7.0",

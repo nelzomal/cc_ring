@@ -32,18 +32,18 @@ export async function activate(context: vscode.ExtensionContext) {
 
         if (sound === 'custom' && !customSoundPath) {
             vscode.window.showWarningMessage(
-                'CC Ring: Custom sound selected but no file path specified. Use "CC Ring: Select Custom Sound File" command to configure.'
+                vscode.l10n.t('customSoundNoPathWarning')
             );
         }
 
         try {
             await hookManager.installHook();
             vscode.window.showInformationMessage(
-                'CC Ring: Hook installed successfully!'
+                vscode.l10n.t('hookInstalledOnActivation')
             );
         } catch (error) {
             vscode.window.showErrorMessage(
-                `CC Ring: Failed to install hook - ${error}`
+                vscode.l10n.t('failedToInstallHookOnActivation', String(error))
             );
         }
     }
@@ -53,9 +53,9 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('cc-ring.testSound', async () => {
             try {
                 await soundManager.playSound();
-                vscode.window.showInformationMessage('Sound test completed!');
+                vscode.window.showInformationMessage(vscode.l10n.t('soundTestCompleted'));
             } catch (error) {
-                vscode.window.showErrorMessage(`Failed to play sound: ${error}`);
+                vscode.window.showErrorMessage(vscode.l10n.t('failedToPlaySound', String(error)));
             }
         })
     );
@@ -67,16 +67,16 @@ export async function activate(context: vscode.ExtensionContext) {
                 canSelectFolders: false,
                 canSelectMany: false,
                 filters: {
-                    'Audio Files': ['wav', 'mp3', 'm4a']
+                    [vscode.l10n.t('audioFilesFilter')]: ['wav', 'mp3', 'm4a']
                 },
-                title: 'Select Custom Sound File'
+                title: vscode.l10n.t('selectCustomSoundTitle')
             });
 
             if (uri && uri[0]) {
                 const config = vscode.workspace.getConfiguration('cc-ring');
                 await config.update('customSoundPath', uri[0].fsPath, vscode.ConfigurationTarget.Global);
                 await config.update('sound', 'custom', vscode.ConfigurationTarget.Global);
-                vscode.window.showInformationMessage(`Custom sound selected: ${uri[0].fsPath}`);
+                vscode.window.showInformationMessage(vscode.l10n.t('customSoundSelected', uri[0].fsPath));
             }
         })
     );
@@ -85,9 +85,9 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('cc-ring.installHook', async () => {
             try {
                 await hookManager.installHook();
-                vscode.window.showInformationMessage('Hook installed successfully!');
+                vscode.window.showInformationMessage(vscode.l10n.t('hookInstalledSuccess'));
             } catch (error) {
-                vscode.window.showErrorMessage(`Failed to install hook: ${error}`);
+                vscode.window.showErrorMessage(vscode.l10n.t('failedToInstallHook', String(error)));
             }
         })
     );
@@ -96,7 +96,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('cc-ring.uninstallHook', async () => {
             try {
                 await hookManager.uninstallHook();
-                vscode.window.showInformationMessage('Hook uninstalled successfully!');
+                vscode.window.showInformationMessage(vscode.l10n.t('hookUninstalledSuccess'));
             } catch (error) {
                 // Check if this is a settings corruption warning
                 if (error instanceof Error && error.message.startsWith('SETTINGS_CORRUPTED:')) {
@@ -104,7 +104,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     const message = error.message.replace('SETTINGS_CORRUPTED: ', '');
                     vscode.window.showWarningMessage(message);
                 } else {
-                    vscode.window.showErrorMessage(`Failed to uninstall hook: ${error}`);
+                    vscode.window.showErrorMessage(vscode.l10n.t('failedToUninstallHook', String(error)));
                 }
             }
         })
@@ -117,12 +117,10 @@ export async function activate(context: vscode.ExtensionContext) {
             const volume = config.get('volume');
             const sound = config.get('sound');
 
+            const statusText = enabled ? vscode.l10n.t('statusEnabled') : vscode.l10n.t('statusDisabled');
+
             vscode.window.showInformationMessage(
-                `CC Ring\n` +
-                `Status: ${enabled ? 'Enabled' : 'Disabled'}\n` +
-                `Volume: ${volume}%\n` +
-                `Sound: ${sound}\n` +
-                `Hook Location: Global (~/.claude/)`
+                vscode.l10n.t('statusMessage', statusText, String(volume), String(sound))
             );
         })
     );
@@ -141,12 +139,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
                 if (sound === 'custom' && !customSoundPath) {
                     const choice = await vscode.window.showWarningMessage(
-                        'Custom sound selected but no file path specified.',
-                        'Select Sound File',
-                        'Dismiss'
+                        vscode.l10n.t('customSoundNoPathDialog'),
+                        vscode.l10n.t('selectSoundFileButton'),
+                        vscode.l10n.t('dismissButton')
                     );
 
-                    if (choice === 'Select Sound File') {
+                    if (choice === vscode.l10n.t('selectSoundFileButton')) {
                         await vscode.commands.executeCommand('cc-ring.selectCustomSound');
                     }
                 }
@@ -163,7 +161,7 @@ export async function activate(context: vscode.ExtensionContext) {
                         await hookManager.writeConfigFile();
                     } catch (error) {
                         console.error('Failed to update config file:', error);
-                        vscode.window.showErrorMessage(`CC Ring: Failed to update config file - ${error}`);
+                        vscode.window.showErrorMessage(vscode.l10n.t('failedToUpdateConfig', String(error)));
                     }
                 }
 
@@ -174,7 +172,7 @@ export async function activate(context: vscode.ExtensionContext) {
                             await hookManager.installHook();
                         } catch (error) {
                             console.error('Failed to reinstall hook:', error);
-                            vscode.window.showErrorMessage(`CC Ring: ${error}`);
+                            vscode.window.showErrorMessage(vscode.l10n.t('failedToReinstallHook', String(error)));
                         }
                     } else {
                         try {
@@ -186,7 +184,7 @@ export async function activate(context: vscode.ExtensionContext) {
                                 const message = error.message.replace('SETTINGS_CORRUPTED: ', '');
                                 vscode.window.showWarningMessage(`CC Ring: ${message}`);
                             } else {
-                                vscode.window.showErrorMessage(`CC Ring: Failed to uninstall - ${error}`);
+                                vscode.window.showErrorMessage(vscode.l10n.t('failedToUninstallOnDisable', String(error)));
                             }
                         }
                     }
@@ -204,11 +202,11 @@ function updateStatusBar() {
     const enabled = config.get('enabled');
 
     if (enabled) {
-        statusBarItem.text = '$(unmute) CC Ring';
-        statusBarItem.tooltip = 'CC Ring - Claude Code Sound Notifier (Enabled)';
+        statusBarItem.text = vscode.l10n.t('statusBarEnabledText');
+        statusBarItem.tooltip = vscode.l10n.t('statusBarEnabledTooltip');
     } else {
-        statusBarItem.text = '$(mute) CC Ring';
-        statusBarItem.tooltip = 'CC Ring - Claude Code Sound Notifier (Disabled)';
+        statusBarItem.text = vscode.l10n.t('statusBarDisabledText');
+        statusBarItem.tooltip = vscode.l10n.t('statusBarDisabledTooltip');
     }
 
     statusBarItem.show();
