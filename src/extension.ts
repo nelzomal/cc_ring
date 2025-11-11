@@ -98,7 +98,14 @@ export async function activate(context: vscode.ExtensionContext) {
                 await hookManager.uninstallHook();
                 vscode.window.showInformationMessage('Hook uninstalled successfully!');
             } catch (error) {
-                vscode.window.showErrorMessage(`Failed to uninstall hook: ${error}`);
+                // Check if this is a settings corruption warning
+                if (error instanceof Error && error.message.startsWith('SETTINGS_CORRUPTED:')) {
+                    // Show warning instead of error - files were deleted successfully
+                    const message = error.message.replace('SETTINGS_CORRUPTED: ', '');
+                    vscode.window.showWarningMessage(message);
+                } else {
+                    vscode.window.showErrorMessage(`Failed to uninstall hook: ${error}`);
+                }
             }
         })
     );
@@ -167,18 +174,29 @@ export async function activate(context: vscode.ExtensionContext) {
                             await hookManager.installHook();
                         } catch (error) {
                             console.error('Failed to reinstall hook:', error);
+                            vscode.window.showErrorMessage(`CC Ring: ${error}`);
                         }
                     } else {
                         try {
                             await hookManager.uninstallHook();
                         } catch (error) {
                             console.error('Failed to uninstall hook:', error);
+                            // Check if this is a settings corruption warning
+                            if (error instanceof Error && error.message.startsWith('SETTINGS_CORRUPTED:')) {
+                                const message = error.message.replace('SETTINGS_CORRUPTED: ', '');
+                                vscode.window.showWarningMessage(`CC Ring: ${message}`);
+                            } else {
+                                vscode.window.showErrorMessage(`CC Ring: Failed to uninstall - ${error}`);
+                            }
                         }
                     }
                 }
             }
         })
     );
+
+    // Return API for extension exports (used in testing)
+    return getAPI();
 }
 
 function updateStatusBar() {
@@ -201,4 +219,12 @@ export function deactivate() {
     if (statusBarItem) {
         statusBarItem.dispose();
     }
+}
+
+// Export API for testing
+export function getAPI() {
+    return {
+        hookManager,
+        soundManager
+    };
 }
