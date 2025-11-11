@@ -4,6 +4,18 @@ All notable changes to the "cc-ring" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.0] - 2025-11-11
+
+### Added
+- Chinese (Simplified) localization support for UI and marketplace
+  - All extension UI strings now support Chinese translation
+  - Chinese README (README.zh-cn.md)
+  - Chinese CHANGELOG (CHANGELOG.zh-cn.md)
+  - Automatic language detection based on VS Code language settings
+- Localization infrastructure using VS Code's modern l10n API
+  - English and Chinese bundle files in l10n/ directory
+  - Package.nls.json files for marketplace localization
+
 ## [0.1.1] - 2025-11-11
 
 ### Fixed

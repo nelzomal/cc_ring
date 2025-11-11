@@ -1,0 +1,18 @@
+{
+  "displayName": "CC Ring - Claude Code 声音通知器",
+  "description": "当 Claude Code 完成任务时播放通知声音",
+  "configuration.title": "CC Ring",
+  "config.enabled.description": "启用 Claude Code 任务完成时的声音通知",
+  "config.volume.description": "通知音量 (0-100%)",
+  "config.sound.description": "完成时播放的声音",
+  "config.sound.complete": "标准完成提示音",
+  "config.sound.subtle": "安静的细微提示音",
+  "config.sound.notification": "警报通知提示音",
+  "config.sound.custom": "使用自定义声音文件",
+  "config.customSoundPath.description": "自定义声音文件的路径（仅当声音设置为"自定义"时使用）",
+  "command.testSound": "CC Ring: 测试通知声音",
+  "command.selectCustomSound": "CC Ring: 选择自定义声音文件",
+  "command.installHook": "CC Ring: 安装/重新安装钩子",
+  "command.uninstallHook": "CC Ring: 卸载钩子",
+  "command.showStatus": "CC Ring: 显示状态"
+}

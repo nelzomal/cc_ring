@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import { HookManager, HOOK_ID } from "../hookManager";
+import { mockL10n, restoreL10n } from "./l10nTestHelper";
 
 suite("HookManager Unit Tests", () => {
   let tempDir: string;
@@ -11,6 +12,8 @@ suite("HookManager Unit Tests", () => {
   let hookManager: HookManager;
 
   setup(() => {
+    // Mock l10n for tests
+    mockL10n();
     // Create temporary directory for test settings
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "cc-ring-test-"));
     tempSettingsPath = path.join(tempDir, "settings.json");
@@ -58,6 +61,9 @@ suite("HookManager Unit Tests", () => {
     if (fs.existsSync(tempDir)) {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
+
+    // Restore l10n
+    restoreL10n();
   });
 
   suite("registerHook", () => {
