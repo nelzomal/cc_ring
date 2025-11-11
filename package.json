@@ -1,0 +1,129 @@
+{
+  "name": "cc-ring",
+  "displayName": "CC Ring - Claude Code Sound Notifier",
+  "description": "Play notification sounds when Claude Code completes tasks",
+  "version": "0.1.0",
+  "publisher": "nelzomal",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nelzomal/cc_ring"
+  },
+  "bugs": {
+    "url": "https://github.com/nelzomal/cc_ring/issues"
+  },
+  "homepage": "https://github.com/nelzomal/cc_ring#readme",
+  "engines": {
+    "vscode": "^1.105.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "notifications",
+    "audio",
+    "productivity",
+    "sound",
+    "alert",
+    "completion",
+    "ai",
+    "accessibility"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "CC Ring",
+      "properties": {
+        "cc-ring.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable sound notifications when Claude Code completes tasks",
+          "order": 1
+        },
+        "cc-ring.volume": {
+          "type": "number",
+          "default": 50,
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Notification volume (0-100%)",
+          "order": 2
+        },
+        "cc-ring.sound": {
+          "type": "string",
+          "default": "complete",
+          "enum": [
+            "complete",
+            "subtle",
+            "notification",
+            "custom"
+          ],
+          "enumDescriptions": [
+            "Standard completion sound",
+            "Quiet subtle sound",
+            "Alert notification sound",
+            "Use custom sound file"
+          ],
+          "description": "Sound to play on completion",
+          "order": 3
+        },
+        "cc-ring.customSoundPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to custom sound file (only used when sound is set to 'custom')",
+          "order": 4
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "cc-ring.testSound",
+        "title": "CC Ring: Test Notification Sound"
+      },
+      {
+        "command": "cc-ring.selectCustomSound",
+        "title": "CC Ring: Select Custom Sound File"
+      },
+      {
+        "command": "cc-ring.installHook",
+        "title": "CC Ring: Install/Reinstall Hook"
+      },
+      {
+        "command": "cc-ring.uninstallHook",
+        "title": "CC Ring: Uninstall Hook"
+      },
+      {
+        "command": "cc-ring.showStatus",
+        "title": "CC Ring: Show Status"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.105.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "typescript-eslint": "^8.46.3",
+    "eslint": "^9.39.1",
+    "typescript": "^5.9.3",
+    "ts-loader": "^9.5.4",
+    "webpack": "^5.102.1",
+    "webpack-cli": "^6.0.1",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}

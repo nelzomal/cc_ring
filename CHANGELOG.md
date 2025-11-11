@@ -1,0 +1,29 @@
+# Change Log
+
+All notable changes to the "cc-ring" extension will be documented in this file.
+
+Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+
+## [0.1.0] - 2025-11-11
+
+### Added
+- Initial release of CC Ring extension
+- Sound notifications when Claude Code completes tasks
+- Configurable volume control (0-100%)
+- Multiple built-in sound options:
+  - Complete: Standard completion sound
+  - Subtle: Quiet subtle sound
+  - Notification: Alert notification sound
+- Custom sound file support
+- Commands:
+  - Test Notification Sound: Preview the selected sound
+  - Select Custom Sound File: Choose a custom sound file
+  - Install/Reinstall Hook: Set up Claude Code integration
+  - Uninstall Hook: Remove Claude Code integration
+  - Show Status: Display current hook installation status
+- Configuration settings:
+  - Enable/disable notifications
+  - Volume control
+  - Sound selection
+  - Custom sound file path
+- Automatic hook management for Claude Code integration
