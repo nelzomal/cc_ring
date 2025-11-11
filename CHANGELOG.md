@@ -27,3 +27,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
   - Sound selection
   - Custom sound file path
 - Automatic hook management for Claude Code integration
+- Comprehensive test suite (42 passing tests)
+
+### Fixed
+- Improved error handling for corrupted settings.json files
+- Better handling of duplicate hook installations
+- Proper preservation of existing Claude Code hooks during install/uninstall
+- Fixed hook identification with consistent UUID
+- Enhanced error messages with appropriate warning vs error classification
+- Robust handling of malformed hook structures in settings.json

@@ -3,27 +3,17 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
+// Export HOOK_ID for use in tests and consistent identification
+export const HOOK_ID = 'cc4e8b3a-9f1d-4c2a-b5e7-3d8f6a2c1b9e';
+
 export class HookManager {
     private context: vscode.ExtensionContext;
     private hookId: string;
 
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
-
-        // Get or generate unique hook ID
-        let hookId = context.globalState.get<string>('hookId');
-        if (!hookId) {
-            hookId = this.generateHookId();
-            context.globalState.update('hookId', hookId);
-        }
-        this.hookId = hookId;
-    }
-
-    /**
-     * Generate a unique hook identifier
-     */
-    private generateHookId(): string {
-        return Math.random().toString(36).substring(2, 10);
+        // Use a fixed UUID for consistent hook file naming
+        this.hookId = HOOK_ID;
     }
 
     /**
@@ -153,6 +143,21 @@ exit 0
      */
     async installHook(): Promise<void> {
         try {
+            // Validate settings.json FIRST before creating any files
+            const settingsPath = this.getSettingsPath();
+            if (fs.existsSync(settingsPath)) {
+                const content = fs.readFileSync(settingsPath, 'utf8');
+                try {
+                    JSON.parse(content);
+                } catch (error) {
+                    // Fail fast - do not create any files
+                    throw new Error(
+                        'Cannot install: settings.json is corrupted. ' +
+                        'Please fix or delete ~/.claude/settings.json manually.'
+                    );
+                }
+            }
+
             const hooksDir = this.getHooksDirectory();
             const hookFilename = this.getHookFilename();
             const hookScriptPath = path.join(hooksDir, hookFilename);
@@ -190,29 +195,46 @@ exit 0
             fs.mkdirSync(settingsDir, { recursive: true });
         }
 
-        // Read existing settings or create new
+        // Validate settings.json BEFORE making any changes
         let settings: any = {};
         if (fs.existsSync(settingsPath)) {
             const content = fs.readFileSync(settingsPath, 'utf8');
             try {
                 settings = JSON.parse(content);
             } catch (error) {
-                console.warn('Failed to parse settings.json, creating new');
-                settings = {};
+                // Fail fast - do not modify corrupted settings
+                throw new Error(
+                    'Cannot install: settings.json is corrupted. ' +
+                    'Please fix or delete ~/.claude/settings.json manually.'
+                );
             }
         }
 
-        // Add hook configuration
-        if (!settings.hooks) {
+        // Validate and fix hooks structure
+        if (!settings.hooks || typeof settings.hooks !== 'object' || Array.isArray(settings.hooks)) {
             settings.hooks = {};
+        }
+
+        // Initialize Stop array if needed
+        if (!settings.hooks.Stop) {
+            settings.hooks.Stop = [];
+        } else if (!Array.isArray(settings.hooks.Stop)) {
+            settings.hooks.Stop = []; // Fix malformed structure
         }
 
         // Use global absolute path
         const hookFilename = this.getHookFilename();
-        const hookCommand = path.join(os.homedir(), '.claude', 'hooks', hookFilename);
+        const hooksDir = this.getHooksDirectory();
+        const hookCommand = path.join(hooksDir, hookFilename);
 
-        settings.hooks.Stop = [
-            {
+        // Check if our hook already exists (avoid duplicates)
+        const hookExists = settings.hooks.Stop.some((stopGroup: any) =>
+            stopGroup.hooks?.some((hook: any) => hook && hook.command === hookCommand)
+        );
+
+        if (!hookExists) {
+            // Append our hook instead of replacing
+            settings.hooks.Stop.push({
                 hooks: [
                     {
                         type: 'command',
@@ -220,8 +242,8 @@ exit 0
                         timeout: 5
                     }
                 ]
-            }
-        ];
+            });
+        }
 
         // Write updated settings
         fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
@@ -241,41 +263,90 @@ exit 0
                 fs.unlinkSync(hookScriptPath);
             }
 
+            // Remove config file if it exists
+            const configFilename = this.getConfigFilename();
+            const configPath = path.join(hooksDir, configFilename);
+            if (fs.existsSync(configPath)) {
+                fs.unlinkSync(configPath);
+            }
+
             // Remove hook from settings.json
-            await this.unregisterHook();
+            const settingsCleanedUp = await this.unregisterHook();
+
+            if (!settingsCleanedUp) {
+                // Files deleted successfully but settings.json was skipped
+                console.log('Hook files removed (settings.json was skipped due to corruption)');
+                throw new Error('SETTINGS_CORRUPTED: Hook files removed successfully, but settings.json appears corrupted and was left untouched. You may need to manually edit ~/.claude/settings.json');
+            }
 
             console.log('Hook uninstalled successfully');
         } catch (error) {
+            // Re-throw settings corruption warnings as-is
+            if (error instanceof Error && error.message.startsWith('SETTINGS_CORRUPTED:')) {
+                throw error;
+            }
             throw new Error(`Failed to uninstall hook: ${error}`);
         }
     }
 
     /**
      * Unregister the hook from Claude Code settings.json
+     * @returns true if settings were cleaned up successfully, false if settings.json was corrupted/skipped
      */
-    private async unregisterHook(): Promise<void> {
+    private async unregisterHook(): Promise<boolean> {
         const settingsPath = this.getSettingsPath();
 
         if (!fs.existsSync(settingsPath)) {
-            return; // Nothing to do
+            return true; // Nothing to do, consider this success
         }
 
         try {
             const content = fs.readFileSync(settingsPath, 'utf8');
             const settings = JSON.parse(content);
 
-            if (settings.hooks && settings.hooks.Stop) {
+            if (!settings.hooks?.Stop || !Array.isArray(settings.hooks.Stop)) {
+                return true; // Nothing to remove, consider this success
+            }
+
+            // Get our hook command path for identification
+            const hookFilename = this.getHookFilename();
+            const hooksDir = this.getHooksDirectory();
+            const hookCommand = path.join(hooksDir, hookFilename);
+
+            // Filter out only our hook from Stop groups
+            settings.hooks.Stop = settings.hooks.Stop.map((stopGroup: any) => {
+                if (!stopGroup.hooks || !Array.isArray(stopGroup.hooks)) {
+                    return stopGroup; // Keep malformed groups as-is
+                }
+
+                // Remove only hooks that match our command path
+                stopGroup.hooks = stopGroup.hooks.filter((hook: any) => {
+                    return hook && hook.command !== hookCommand;
+                });
+
+                return stopGroup;
+            }).filter((stopGroup: any) => {
+                // Remove empty Stop groups (groups with no hooks left)
+                return stopGroup.hooks && stopGroup.hooks.length > 0;
+            });
+
+            // If Stop array is now empty, remove it
+            if (settings.hooks.Stop.length === 0) {
                 delete settings.hooks.Stop;
 
                 // If hooks object is now empty, remove it
                 if (Object.keys(settings.hooks).length === 0) {
                     delete settings.hooks;
                 }
-
-                fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
             }
+
+            fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+            return true; // Successfully cleaned up
         } catch (error) {
-            console.warn('Failed to unregister hook from settings.json:', error);
+            // If settings.json is corrupted, skip cleanup but don't fail
+            // Hook files are already deleted at this point
+            console.warn('Skipping settings.json cleanup - file is corrupted or invalid:', error);
+            return false; // Indicate that settings cleanup was skipped
         }
     }
 
