@@ -30,5 +30,6 @@
   "failedToInstallHookManager": "Failed to install hook: {0}",
   "failedToUninstallHookManager": "Failed to uninstall hook: {0}",
   "soundFileNotFound": "Sound file not found: {0}",
-  "failedToPlaySoundManager": "Failed to play sound: {0}"
+  "failedToPlaySoundManager": "Failed to play sound: {0}",
+  "duplicateStopKeysDetected": "Cannot modify settings.json: Found {0} duplicate \"Stop\" keys in the hooks configuration. This is invalid JSON. Please manually edit ~/.claude/settings.json to use a single \"Stop\" array with multiple hook groups instead."
 }

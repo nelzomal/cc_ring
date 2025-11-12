@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import { parse as jsonlintParse } from '@prantlf/jsonlint';
 
 // Export HOOK_ID for use in tests and consistent identification
 export const HOOK_ID = 'cc4e8b3a-9f1d-4c2a-b5e7-3d8f6a2c1b9e';
@@ -42,6 +43,14 @@ export class HookManager {
      */
     private getSettingsPath(): string {
         return path.join(os.homedir(), '.claude', 'settings.json');
+    }
+
+    /**
+     * Parse JSON with duplicate key detection
+     * Throws an error for any JSON parsing issues including duplicate keys
+     */
+    private parseJSON(content: string): any {
+        return jsonlintParse(content, { allowDuplicateObjectKeys: false });
     }
 
     /**
@@ -189,9 +198,9 @@ exit 0
             if (fs.existsSync(settingsPath)) {
                 const content = fs.readFileSync(settingsPath, 'utf8');
                 try {
-                    JSON.parse(content);
+                    this.parseJSON(content);
                 } catch (error) {
-                    // Fail fast - do not create any files
+                    // All parse errors (including duplicate keys) are treated as corrupted settings
                     throw new Error(vscode.l10n.t('cannotInstallCorruptedSettings'));
                 }
             }
@@ -241,10 +250,11 @@ exit 0
         let settings: any = {};
         if (fs.existsSync(settingsPath)) {
             const content = fs.readFileSync(settingsPath, 'utf8');
+
             try {
-                settings = JSON.parse(content);
+                settings = this.parseJSON(content);
             } catch (error) {
-                // Fail fast - do not modify corrupted settings
+                // All parse errors (including duplicate keys) are treated as corrupted settings
                 throw new Error(vscode.l10n.t('cannotInstallCorruptedSettings'));
             }
         }
@@ -341,7 +351,7 @@ exit 0
 
         try {
             const content = fs.readFileSync(settingsPath, 'utf8');
-            const settings = JSON.parse(content);
+            const settings = this.parseJSON(content);
 
             if (!settings.hooks?.Stop || !Array.isArray(settings.hooks.Stop)) {
                 return true; // Nothing to remove, consider this success
@@ -382,8 +392,9 @@ exit 0
             fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
             return true; // Successfully cleaned up
         } catch (error) {
-            // If settings.json is corrupted, skip cleanup but don't fail
+            // If settings.json is corrupted (any parse error), skip cleanup but don't fail
             // Hook files are already deleted at this point
+            // All parse errors (including duplicate keys) are treated the same
             console.warn('Skipping settings.json cleanup - file is corrupted or invalid:', error);
             return false; // Indicate that settings cleanup was skipped
         }

@@ -449,6 +449,124 @@ suite("HookManager Unit Tests", () => {
       const settings = JSON.parse(fs.readFileSync(tempSettingsPath, "utf-8"));
       assert.ok(Array.isArray(settings.hooks.Stop));
     });
+
+    test("Should reject settings with duplicate Stop keys", async () => {
+      // Setup: Create settings with duplicate "Stop" keys (malformed JSON)
+      // Note: This is technically invalid JSON, but JSON.parse() accepts it
+      // and uses the last value. We want to detect this BEFORE that happens.
+      const malformedContent = `{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/path/to/hook1.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/path/to/hook2.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/path/to/hook3.sh"
+          }
+        ]
+      }
+    ]
+  }
+}`;
+      fs.writeFileSync(tempSettingsPath, malformedContent);
+
+      // Action: Install should reject with corrupted settings error
+      // Note: Duplicate keys are treated the same as any corrupted JSON
+      await assert.rejects(
+        async () => await hookManager.installHook(),
+        /settings\.json is corrupted/i,
+        "Should throw error about corrupted settings"
+      );
+
+      // Verify: Hook files should NOT be created
+      const hookPath = path.join(tempDir, `play-sound-cc-ring-${HOOK_ID}.sh`);
+      const configPath = path.join(
+        tempDir,
+        `cc-ring-config-${HOOK_ID}.json`
+      );
+      assert.ok(
+        !fs.existsSync(hookPath),
+        "Hook script should NOT be created"
+      );
+      assert.ok(
+        !fs.existsSync(configPath),
+        "Config file should NOT be created"
+      );
+
+      // Verify: Settings file left untouched
+      const stillMalformed = fs.readFileSync(tempSettingsPath, "utf-8");
+      assert.strictEqual(
+        stillMalformed,
+        malformedContent,
+        "Malformed settings should be left untouched"
+      );
+    });
+
+    test("Should reject uninstall with duplicate Stop keys", async () => {
+      // Setup: Create settings with duplicate "Stop" keys
+      const malformedContent = `{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/path/to/hook1.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/path/to/hook2.sh"
+          }
+        ]
+      }
+    ]
+  }
+}`;
+      fs.writeFileSync(tempSettingsPath, malformedContent);
+
+      // Action: Uninstall should reject with corrupted settings warning
+      // Note: Duplicate keys are treated the same as any corrupted JSON
+      // Files are deleted but settings cleanup is skipped
+      await assert.rejects(
+        async () => await hookManager.uninstallHook(),
+        /SETTINGS_CORRUPTED/i,
+        "Should throw warning about corrupted settings"
+      );
+
+      // Verify: Settings file left untouched
+      const stillMalformed = fs.readFileSync(tempSettingsPath, "utf-8");
+      assert.strictEqual(
+        stillMalformed,
+        malformedContent,
+        "Malformed settings should be left untouched"
+      );
+    });
   });
 
   suite("Malformed Stop group structures", () => {

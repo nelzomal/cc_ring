@@ -4,6 +4,19 @@ All notable changes to the "cc-ring" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.5] - 2025-11-12
+
+### Fixed
+- Added robust JSON validation to prevent extension from modifying malformed Claude Code settings
+- Implemented duplicate key detection using @prantlf/jsonlint library
+- Extension now properly rejects settings.json with duplicate "Stop" hook keys
+- Consistent error handling across install/uninstall operations for all JSON parsing errors
+
+### Changed
+- All malformed JSON (including duplicate keys) is now treated consistently as corrupted settings
+- Install operations fail fast without creating files when settings are malformed
+- Uninstall operations delete hook files but skip settings cleanup with clear warning message
+
 ## [0.2.4] - 2025-11-12
 
 ### Fixed

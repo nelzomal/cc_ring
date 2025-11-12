@@ -30,5 +30,6 @@
   "failedToInstallHookManager": "安装钩子失败：{0}",
   "failedToUninstallHookManager": "卸载钩子失败：{0}",
   "soundFileNotFound": "未找到声音文件：{0}",
-  "failedToPlaySoundManager": "播放声音失败：{0}"
+  "failedToPlaySoundManager": "播放声音失败：{0}",
+  "duplicateStopKeysDetected": "无法修改 settings.json：在钩子配置中发现 {0} 个重复的 \"Stop\" 键。这是无效的 JSON。请手动编辑 ~/.claude/settings.json，使用单个 \"Stop\" 数组包含多个钩子组。"
 }
