@@ -1,5 +1,7 @@
 # CC Ring - Claude Code 声音通知器
 
+[下载链接](https://marketplace.visualstudio.com/items?itemName=nelzomal.cc-ring)
+
 再也不会错过 Claude Code 完成任务的时刻！CC Ring 会在 Claude Code 完成执行任务时播放可自定义的通知声音，帮助您保持高效，无需持续盯着屏幕。
 
 ## 功能特性

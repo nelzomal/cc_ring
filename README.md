@@ -1,5 +1,8 @@
 # CC Ring - Claude Code Sound Notifier
 
+[中文文档](https://github.com/nelzomal/cc_ring/blob/master/README.zh-cn.md)
+[Download Link](https://marketplace.visualstudio.com/items?itemName=nelzomal.cc-ring)
+
 Never miss when Claude Code completes a task! CC Ring plays customizable notification sounds when Claude Code finishes executing tasks, helping you stay productive without constantly watching your screen.
 
 ## Features

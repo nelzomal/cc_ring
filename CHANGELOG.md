@@ -4,6 +4,15 @@ All notable changes to the "cc-ring" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.2] - 2025-11-12
+
+### Added
+- Language navigation links in README files
+- Marketplace download links in both English and Chinese README
+
+### Fixed
+- Fixed quote escaping in Chinese localization strings
+
 ## [0.2.1] - 2025-11-12
 
 ### Fixed
