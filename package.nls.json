@@ -10,9 +10,10 @@
   "config.sound.notification": "Alert notification sound",
   "config.sound.custom": "Use custom sound file",
   "config.customSoundPath.description": "Path to custom sound file (only used when sound is set to 'custom')",
-  "command.testSound": "CC Ring: Test Notification Sound",
-  "command.selectCustomSound": "CC Ring: Select Custom Sound File",
-  "command.installHook": "CC Ring: Install/Reinstall Hook",
-  "command.uninstallHook": "CC Ring: Uninstall Hook",
-  "command.showStatus": "CC Ring: Show Status"
+  "command.category": "CC Ring",
+  "command.testSound": "Test Notification Sound",
+  "command.selectCustomSound": "Select Custom Sound File",
+  "command.installHook": "Install/Reinstall Hook",
+  "command.uninstallHook": "Uninstall Hook",
+  "command.showStatus": "Show Status"
 }

@@ -2,7 +2,7 @@
   "name": "cc-ring",
   "displayName": "%displayName%",
   "description": "%description%",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "publisher": "nelzomal",
   "license": "MIT",
   "icon": "icon.png",
@@ -84,23 +84,28 @@
     "commands": [
       {
         "command": "cc-ring.testSound",
-        "title": "%command.testSound%"
+        "title": "%command.testSound%",
+        "category": "%command.category%"
       },
       {
         "command": "cc-ring.selectCustomSound",
-        "title": "%command.selectCustomSound%"
+        "title": "%command.selectCustomSound%",
+        "category": "%command.category%"
       },
       {
         "command": "cc-ring.installHook",
-        "title": "%command.installHook%"
+        "title": "%command.installHook%",
+        "category": "%command.category%"
       },
       {
         "command": "cc-ring.uninstallHook",
-        "title": "%command.uninstallHook%"
+        "title": "%command.uninstallHook%",
+        "category": "%command.category%"
       },
       {
         "command": "cc-ring.showStatus",
-        "title": "%command.showStatus%"
+        "title": "%command.showStatus%",
+        "category": "%command.category%"
       }
     ]
   },

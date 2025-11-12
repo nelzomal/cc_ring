@@ -4,6 +4,19 @@ All notable changes to the "cc-ring" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.4] - 2025-11-12
+
+### Fixed
+- Fixed Chinese localization for command palette entries by adding category field
+- Commands now display properly in Chinese VSCode (e.g., "CC Ring: 测试通知声音")
+
+### Changed
+- Reorganized hook files into dedicated `~/.claude/hooks/cc_ring/` directory
+- Added comprehensive logging system with two log files:
+  - `error.log`: Captures all errors (config issues, file not found, playback failures)
+  - `hook.log`: Records normal operations and execution flow
+- Both logs auto-rotate to keep last 2000 lines to prevent unlimited growth
+
 ## [0.2.3] - 2025-11-12
 
 ### Added
