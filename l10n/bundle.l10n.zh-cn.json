@@ -1,7 +1,7 @@
 {
   "hookInstalledOnActivation": "CC Ring: 钩子安装成功！",
   "failedToInstallHookOnActivation": "CC Ring: 安装钩子失败 - {0}",
-  "customSoundNoPathWarning": "CC Ring: 已选择自定义声音但未指定文件路径。请使用"CC Ring: 选择自定义声音文件"命令进行配置。",
+  "customSoundNoPathWarning": "CC Ring: 已选择自定义声音但未指定文件路径。请使用\"CC Ring: 选择自定义声音文件\"命令进行配置。",
   "soundTestCompleted": "声音测试完成！",
   "failedToPlaySound": "播放声音失败：{0}",
   "selectCustomSoundTitle": "选择自定义声音文件",

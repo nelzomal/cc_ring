@@ -9,7 +9,7 @@
   "config.sound.subtle": "安静的细微提示音",
   "config.sound.notification": "警报通知提示音",
   "config.sound.custom": "使用自定义声音文件",
-  "config.customSoundPath.description": "自定义声音文件的路径（仅当声音设置为"自定义"时使用）",
+  "config.customSoundPath.description": "自定义声音文件的路径（仅当声音设置为\"自定义\"时使用）",
   "command.testSound": "CC Ring: 测试通知声音",
   "command.selectCustomSound": "CC Ring: 选择自定义声音文件",
   "command.installHook": "CC Ring: 安装/重新安装钩子",
