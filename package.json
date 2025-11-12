@@ -2,9 +2,10 @@
   "name": "cc-ring",
   "displayName": "%displayName%",
   "description": "%description%",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "publisher": "nelzomal",
   "license": "MIT",
+  "icon": "icon.png",
   "l10n": "./l10n",
   "repository": {
     "type": "git",

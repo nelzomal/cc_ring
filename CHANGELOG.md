@@ -4,6 +4,11 @@ All notable changes to the "cc-ring" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.3] - 2025-11-12
+
+### Added
+- Extension icon/logo featuring VS Code logo and notification bell
+
 ## [0.2.2] - 2025-11-12
 
 ### Added
