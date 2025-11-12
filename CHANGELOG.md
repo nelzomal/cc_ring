@@ -4,6 +4,16 @@ All notable changes to the "cc-ring" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.7] - 2025-11-12
+
+### Fixed
+- Fixed duplicate "Hook installed successfully!" notifications appearing every time VS Code opens a folder
+- Notifications now only appear when the hook is actually installed for the first time
+- Added installation state detection to prevent redundant notifications on extension activation
+
+### Added
+- Added comprehensive tests for hook installation state detection and notification behavior
+
 ## [0.2.6] - 2025-11-12
 
 ### Fixed

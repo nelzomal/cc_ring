@@ -36,11 +36,18 @@ export async function activate(context: vscode.ExtensionContext) {
             );
         }
 
+        // Check if hook is already installed before showing notification
+        const wasInstalled = hookManager.isHookInstalled();
+
         try {
             await hookManager.installHook();
-            vscode.window.showInformationMessage(
-                vscode.l10n.t('CC Ring: Hook installed successfully!')
-            );
+
+            // Only show notification if this was a fresh installation
+            if (!wasInstalled) {
+                vscode.window.showInformationMessage(
+                    vscode.l10n.t('CC Ring: Hook installed successfully!')
+                );
+            }
         } catch (error) {
             vscode.window.showErrorMessage(
                 vscode.l10n.t('CC Ring: Failed to install hook - {0}', String(error))
