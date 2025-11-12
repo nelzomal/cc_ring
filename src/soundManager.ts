@@ -45,7 +45,7 @@ export class SoundManager {
 
         // Check if sound file exists
         if (!fs.existsSync(soundPath)) {
-            throw new Error(vscode.l10n.t('soundFileNotFound', soundPath));
+            throw new Error(vscode.l10n.t('Sound file not found: {0}', soundPath));
         }
 
         const config = vscode.workspace.getConfiguration('cc-ring');
@@ -55,7 +55,7 @@ export class SoundManager {
             // macOS - use afplay
             await execAsync(`afplay -v ${volume} "${soundPath}"`);
         } catch (error) {
-            throw new Error(vscode.l10n.t('failedToPlaySoundManager', String(error)));
+            throw new Error(vscode.l10n.t('Failed to play sound: {0}', String(error)));
         }
     }
 

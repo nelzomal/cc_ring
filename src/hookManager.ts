@@ -90,7 +90,7 @@ export class HookManager {
 
             fs.writeFileSync(configPath, JSON.stringify(configData, null, 2));
         } catch (error) {
-            throw new Error(vscode.l10n.t('failedToWriteConfig', String(error)));
+            throw new Error(vscode.l10n.t('Failed to write config file: {0}', String(error)));
         }
     }
 
@@ -201,7 +201,7 @@ exit 0
                     this.parseJSON(content);
                 } catch (error) {
                     // All parse errors (including duplicate keys) are treated as corrupted settings
-                    throw new Error(vscode.l10n.t('cannotInstallCorruptedSettings'));
+                    throw new Error(vscode.l10n.t('Cannot install: settings.json is corrupted. Please fix or delete ~/.claude/settings.json manually.'));
                 }
             }
 
@@ -230,7 +230,7 @@ exit 0
             if (error instanceof Error) {
                 throw error;
             }
-            throw new Error(vscode.l10n.t('failedToInstallHookManager', String(error)));
+            throw new Error(vscode.l10n.t('Failed to install hook: {0}', String(error)));
         }
     }
 
@@ -255,7 +255,7 @@ exit 0
                 settings = this.parseJSON(content);
             } catch (error) {
                 // All parse errors (including duplicate keys) are treated as corrupted settings
-                throw new Error(vscode.l10n.t('cannotInstallCorruptedSettings'));
+                throw new Error(vscode.l10n.t('Cannot install: settings.json is corrupted. Please fix or delete ~/.claude/settings.json manually.'));
             }
         }
 
@@ -325,7 +325,7 @@ exit 0
             if (!settingsCleanedUp) {
                 // Files deleted successfully but settings.json was skipped
                 console.log('Hook files removed (settings.json was skipped due to corruption)');
-                throw new Error(vscode.l10n.t('settingsCorruptedWarning'));
+                throw new Error(vscode.l10n.t('SETTINGS_CORRUPTED: Hook files removed successfully, but settings.json appears corrupted and was left untouched. You may need to manually edit ~/.claude/settings.json'));
             }
 
             console.log('Hook uninstalled successfully');
@@ -334,7 +334,7 @@ exit 0
             if (error instanceof Error) {
                 throw error;
             }
-            throw new Error(vscode.l10n.t('failedToUninstallHookManager', String(error)));
+            throw new Error(vscode.l10n.t('Failed to uninstall hook: {0}', String(error)));
         }
     }
 

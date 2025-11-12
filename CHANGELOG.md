@@ -4,6 +4,23 @@ All notable changes to the "cc-ring" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.6] - 2025-11-12
+
+### Fixed
+- Fixed English localization displaying keys instead of actual messages
+- English messages now display correctly in all notifications and UI elements
+
+### Changed
+- Refactored localization system to use English messages as keys (proper VS Code l10n approach)
+- Updated Chinese translations to match new localization structure
+- Removed outdated l10nTestHelper test mock (tests now use real l10n behavior)
+
+### Added
+- Added TypeScript-based l10n validation script using compiler API (`npm run l10n-check`)
+- Script validates all l10n strings are defined in translation bundles
+- Detects missing translations and unused keys automatically
+- Configured ts-node to compile in-memory without emitting build artifacts
+
 ## [0.2.5] - 2025-11-12
 
 ### Fixed
