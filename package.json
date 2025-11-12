@@ -2,7 +2,7 @@
   "name": "cc-ring",
   "displayName": "%displayName%",
   "description": "%description%",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "publisher": "nelzomal",
   "license": "MIT",
   "icon": "icon.png",
@@ -135,5 +135,8 @@
     "typescript-eslint": "^8.46.3",
     "webpack": "^5.102.1",
     "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "@prantlf/jsonlint": "^16.0.0"
   }
 }
