@@ -34,7 +34,7 @@ export class HookManager {
      * Get the Claude Code hooks directory path (global only)
      */
     private getHooksDirectory(): string {
-        return path.join(os.homedir(), '.claude', 'hooks');
+        return path.join(os.homedir(), '.claude', 'hooks', 'cc_ring');
     }
 
     /**
@@ -92,6 +92,8 @@ export class HookManager {
         const hooksDir = this.getHooksDirectory();
         const configFilename = this.getConfigFilename();
         const configPath = path.join(hooksDir, configFilename);
+        const errorLogPath = path.join(hooksDir, 'error.log');
+        const hookLogPath = path.join(hooksDir, 'hook.log');
 
         // Get default sound path as fallback
         const soundsDir = path.join(this.context.extensionPath, 'sounds');
@@ -106,34 +108,73 @@ export class HookManager {
 CONFIG_FILE="${configPath}"
 DEFAULT_SOUND="${defaultSoundPath}"
 DEFAULT_VOLUME="0.50"
+ERROR_LOG="${errorLogPath}"
+HOOK_LOG="${hookLogPath}"
+
+# Logging functions
+log_error() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR: $1" >> "$ERROR_LOG" 2>/dev/null
+    # Keep only last 2000 lines
+    if [[ -f "$ERROR_LOG" ]]; then
+        tail -n 2000 "$ERROR_LOG" > "$ERROR_LOG.tmp" 2>/dev/null && mv "$ERROR_LOG.tmp" "$ERROR_LOG" 2>/dev/null
+    fi
+}
+
+log_info() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO: $1" >> "$HOOK_LOG" 2>/dev/null
+    # Keep only last 2000 lines
+    if [[ -f "$HOOK_LOG" ]]; then
+        tail -n 2000 "$HOOK_LOG" > "$HOOK_LOG.tmp" 2>/dev/null && mv "$HOOK_LOG.tmp" "$HOOK_LOG" 2>/dev/null
+    fi
+}
+
+log_info "Hook execution started"
 
 # Read config from JSON file
 if [[ -f "$CONFIG_FILE" ]]; then
+    log_info "Config file found: $CONFIG_FILE"
     # Extract soundPath and volume from JSON using basic parsing
-    SOUND_FILE=$(grep -o '"soundPath"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" | sed 's/.*"soundPath"[[:space:]]*:[[:space:]]*"\\([^"]*\\)".*/\\1/')
-    VOLUME=$(grep -o '"volume"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" | sed 's/.*"volume"[[:space:]]*:[[:space:]]*"\\([^"]*\\)".*/\\1/')
+    SOUND_FILE=$(grep -o '"soundPath"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"soundPath"[[:space:]]*:[[:space:]]*"\\([^"]*\\)".*/\\1/' 2>/dev/null)
+    VOLUME=$(grep -o '"volume"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"volume"[[:space:]]*:[[:space:]]*"\\([^"]*\\)".*/\\1/' 2>/dev/null)
 
     # Use defaults if extraction failed
     if [[ -z "$SOUND_FILE" ]]; then
+        log_error "Failed to parse soundPath from config, using default"
         SOUND_FILE="$DEFAULT_SOUND"
+    else
+        log_info "Loaded soundPath: $SOUND_FILE"
     fi
     if [[ -z "$VOLUME" ]]; then
+        log_error "Failed to parse volume from config, using default"
         VOLUME="$DEFAULT_VOLUME"
+    else
+        log_info "Loaded volume: $VOLUME"
     fi
 else
+    log_error "Config file not found: $CONFIG_FILE"
     # Config file doesn't exist, use defaults
     SOUND_FILE="$DEFAULT_SOUND"
     VOLUME="$DEFAULT_VOLUME"
+    log_info "Using defaults: sound=$DEFAULT_SOUND, volume=$DEFAULT_VOLUME"
 fi
 
 # Fallback to macOS system sound if file doesn't exist
 if [[ ! -f "$SOUND_FILE" ]]; then
+    log_error "Sound file not found: $SOUND_FILE, using system sound"
     SOUND_FILE="/System/Library/Sounds/Ping.aiff"
+    log_info "Fallback to system sound: $SOUND_FILE"
 fi
 
 # Play sound using afplay
-afplay -v "$VOLUME" "$SOUND_FILE" &>/dev/null &
+log_info "Playing sound: afplay -v $VOLUME $SOUND_FILE"
+if ! afplay -v "$VOLUME" "$SOUND_FILE" &>/dev/null &
+then
+    log_error "Failed to play sound: afplay -v $VOLUME $SOUND_FILE"
+else
+    log_info "Sound played successfully"
+fi
 
+log_info "Hook execution completed"
 exit 0
 `;
     }
