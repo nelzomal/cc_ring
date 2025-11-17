@@ -1,8 +1,8 @@
 {
   "displayName": "CC Ring - Claude Code Sound Notifier",
-  "description": "Play notification sounds when Claude Code completes tasks",
+  "description": "Play notification sounds for Claude Code events (task completion, idle prompts, plan approval, questions)",
   "configuration.title": "CC Ring",
-  "config.enabled.description": "Enable sound notifications when Claude Code completes tasks",
+  "config.enabled.description": "Enable sound notifications for all Claude Code events (task completion, idle prompts, plan approval, questions)",
   "config.volume.description": "Notification volume (0-100%)",
   "config.sound.description": "Sound to play on completion",
   "config.sound.complete": "Standard completion sound",

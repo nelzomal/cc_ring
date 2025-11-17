@@ -1,8 +1,8 @@
 {
   "displayName": "CC Ring - Claude Code 声音通知器",
-  "description": "当 Claude Code 完成任务时播放通知声音",
+  "description": "为 Claude Code 事件播放通知声音（任务完成、空闲提示、计划批准、问题）",
   "configuration.title": "CC Ring",
-  "config.enabled.description": "启用 Claude Code 任务完成时的声音通知",
+  "config.enabled.description": "启用所有 Claude Code 事件的声音通知（任务完成、空闲提示、计划批准、问题）",
   "config.volume.description": "通知音量 (0-100%)",
   "config.sound.description": "完成时播放的声音",
   "config.sound.complete": "标准完成提示音",

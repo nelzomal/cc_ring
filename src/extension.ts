@@ -1,26 +1,42 @@
+import 'reflect-metadata'; // MUST be imported first for InversifyJS
 import * as vscode from 'vscode';
-import { HookManager } from './hookManager';
-import { SoundManager } from './soundManager';
+import { Container } from 'inversify';
+import { createContainer } from './presentation/composition/container';
+import { TYPES } from './shared/types';
+import { InstallHookCommand } from './presentation/vscode/commands/InstallHookCommand';
+import { UninstallHookCommand } from './presentation/vscode/commands/UninstallHookCommand';
+import { TestSoundCommand } from './presentation/vscode/commands/TestSoundCommand';
+import { StatusBarView } from './presentation/vscode/views/StatusBarView';
+import { CheckHookStatusUseCase } from './application/usecases/CheckHookStatusUseCase';
 
-let statusBarItem: vscode.StatusBarItem;
-let hookManager: HookManager;
-let soundManager: SoundManager;
+let statusBarView: StatusBarView;
+let container: Container;
+let installCommand: InstallHookCommand;
+let uninstallCommand: UninstallHookCommand;
+let testSoundCommand: TestSoundCommand;
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log('CC Ring is now active');
 
-    // Initialize managers
-    hookManager = new HookManager(context);
-    soundManager = new SoundManager(context);
-
-    // Create status bar item
-    statusBarItem = vscode.window.createStatusBarItem(
+    // Create status bar (VSCode API object, must be created before container)
+    const statusBarItem = vscode.window.createStatusBarItem(
         vscode.StatusBarAlignment.Right,
         100
     );
     statusBarItem.command = 'cc-ring.showStatus';
     context.subscriptions.push(statusBarItem);
-    updateStatusBar();
+
+    // Initialize InversifyJS container (composition root)
+    container = createContainer(context, statusBarItem);
+
+    // Resolve dependencies from container
+    statusBarView = container.get<StatusBarView>(TYPES.StatusBarView);
+    await statusBarView.update();
+
+    // Resolve command controllers from container
+    installCommand = container.get<InstallHookCommand>(TYPES.InstallHookCommand);
+    uninstallCommand = container.get<UninstallHookCommand>(TYPES.UninstallHookCommand);
+    testSoundCommand = container.get<TestSoundCommand>(TYPES.TestSoundCommand);
 
     // Install hook on activation if enabled
     const config = vscode.workspace.getConfiguration('cc-ring');
@@ -37,33 +53,28 @@ export async function activate(context: vscode.ExtensionContext) {
         }
 
         // Check if hook is already installed before showing notification
-        const wasInstalled = hookManager.isHookInstalled();
+        const checkStatusUseCase = container.get<CheckHookStatusUseCase>(TYPES.CheckHookStatusUseCase);
+        const status = await checkStatusUseCase.execute();
+        const wasInstalled = status.isInstalled;
 
         try {
-            await hookManager.installHook();
+            await installCommand.execute();
+            await statusBarView.update();
 
             // Only show notification if this was a fresh installation
             if (!wasInstalled) {
-                vscode.window.showInformationMessage(
-                    vscode.l10n.t('CC Ring: Hook installed successfully!')
-                );
+                // Success message already shown by command
             }
         } catch (error) {
-            vscode.window.showErrorMessage(
-                vscode.l10n.t('CC Ring: Failed to install hook - {0}', String(error))
-            );
+            // Error already shown by command
+            console.error('Failed to install hook on activation:', error);
         }
     }
 
     // Register commands
     context.subscriptions.push(
         vscode.commands.registerCommand('cc-ring.testSound', async () => {
-            try {
-                await soundManager.playSound();
-                vscode.window.showInformationMessage(vscode.l10n.t('Sound test completed!'));
-            } catch (error) {
-                vscode.window.showErrorMessage(vscode.l10n.t('Failed to play sound: {0}', String(error)));
-            }
+            await testSoundCommand.execute();
         })
     );
 
@@ -90,44 +101,40 @@ export async function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(
         vscode.commands.registerCommand('cc-ring.installHook', async () => {
-            try {
-                await hookManager.installHook();
-                vscode.window.showInformationMessage(vscode.l10n.t('Hook installed successfully!'));
-            } catch (error) {
-                vscode.window.showErrorMessage(vscode.l10n.t('Failed to install hook: {0}', String(error)));
-            }
+            await installCommand.execute();
+            await statusBarView.update();
         })
     );
 
     context.subscriptions.push(
         vscode.commands.registerCommand('cc-ring.uninstallHook', async () => {
-            try {
-                await hookManager.uninstallHook();
-                vscode.window.showInformationMessage(vscode.l10n.t('Hook uninstalled successfully!'));
-            } catch (error) {
-                // Check if this is a settings corruption warning
-                if (error instanceof Error && error.message.startsWith('SETTINGS_CORRUPTED:')) {
-                    // Show warning instead of error - files were deleted successfully
-                    const message = error.message.replace('SETTINGS_CORRUPTED: ', '');
-                    vscode.window.showWarningMessage(message);
-                } else {
-                    vscode.window.showErrorMessage(vscode.l10n.t('Failed to uninstall hook: {0}', String(error)));
-                }
-            }
+            await uninstallCommand.execute();
+            await statusBarView.update();
         })
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('cc-ring.showStatus', () => {
+        vscode.commands.registerCommand('cc-ring.showStatus', async () => {
             const config = vscode.workspace.getConfiguration('cc-ring');
             const enabled = config.get('enabled');
             const volume = config.get('volume');
             const sound = config.get('sound');
 
+            const checkStatusUseCase = container.get<CheckHookStatusUseCase>(TYPES.CheckHookStatusUseCase);
+            const status = await checkStatusUseCase.execute();
             const statusText = enabled ? vscode.l10n.t('Enabled') : vscode.l10n.t('Disabled');
 
+            // Show total hooks installed (always SUPPORTED_HOOKS.length when installed)
+            const hookCount = status.hooksRegistered ? '7' : '0';
+
             vscode.window.showInformationMessage(
-                vscode.l10n.t('CC Ring\nStatus: {0}\nVolume: {1}%\nSound: {2}\nHook Location: Global (~/.claude/)', statusText, String(volume), String(sound))
+                vscode.l10n.t(
+                    'CC Ring\nStatus: {0}\nVolume: {1}%\nSound: {2}\nInstalled Hooks: {3}\nHook Location: Global (~/.claude/)',
+                    statusText,
+                    String(volume),
+                    String(sound),
+                    hookCount
+                )
             );
         })
     );
@@ -136,7 +143,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.workspace.onDidChangeConfiguration(async (event) => {
             if (event.affectsConfiguration('cc-ring')) {
-                updateStatusBar();
+                await statusBarView.update();
 
                 const config = vscode.workspace.getConfiguration('cc-ring');
 
@@ -161,14 +168,15 @@ export async function activate(context: vscode.ExtensionContext) {
                 const soundChanged = event.affectsConfiguration('cc-ring.sound');
                 const volumeChanged = event.affectsConfiguration('cc-ring.volume');
                 const customPathChanged = event.affectsConfiguration('cc-ring.customSoundPath');
+                const hooksChanged = event.affectsConfiguration('cc-ring.hooks');
 
-                // If sound or volume changed, just update config file (no hook reinstall needed)
-                if (soundChanged || volumeChanged || customPathChanged) {
+                // If sound or volume changed, reinstall to update config file
+                if ((soundChanged || volumeChanged || customPathChanged || hooksChanged) && config.get('enabled')) {
                     try {
-                        await hookManager.writeConfigFile();
+                        await installCommand.execute();
+                        await statusBarView.update();
                     } catch (error) {
                         console.error('Failed to update config file:', error);
-                        vscode.window.showErrorMessage(vscode.l10n.t('CC Ring: Failed to update config file - {0}', String(error)));
                     }
                 }
 
@@ -176,23 +184,17 @@ export async function activate(context: vscode.ExtensionContext) {
                 if (enabledChanged) {
                     if (config.get('enabled')) {
                         try {
-                            await hookManager.installHook();
+                            await installCommand.execute();
+                            await statusBarView.update();
                         } catch (error) {
                             console.error('Failed to reinstall hook:', error);
-                            vscode.window.showErrorMessage(vscode.l10n.t('CC Ring: {0}', String(error)));
                         }
                     } else {
                         try {
-                            await hookManager.uninstallHook();
+                            await uninstallCommand.execute();
+                            await statusBarView.update();
                         } catch (error) {
                             console.error('Failed to uninstall hook:', error);
-                            // Check if this is a settings corruption warning
-                            if (error instanceof Error && error.message.startsWith('SETTINGS_CORRUPTED:')) {
-                                const message = error.message.replace('SETTINGS_CORRUPTED: ', '');
-                                vscode.window.showWarningMessage(`CC Ring: ${message}`);
-                            } else {
-                                vscode.window.showErrorMessage(vscode.l10n.t('CC Ring: Failed to uninstall - {0}', String(error)));
-                            }
                         }
                     }
                 }
@@ -204,32 +206,20 @@ export async function activate(context: vscode.ExtensionContext) {
     return getAPI();
 }
 
-function updateStatusBar() {
-    const config = vscode.workspace.getConfiguration('cc-ring');
-    const enabled = config.get('enabled');
-
-    if (enabled) {
-        statusBarItem.text = vscode.l10n.t('$(unmute) CC Ring');
-        statusBarItem.tooltip = vscode.l10n.t('CC Ring - Claude Code Sound Notifier (Enabled)');
-    } else {
-        statusBarItem.text = vscode.l10n.t('$(mute) CC Ring');
-        statusBarItem.tooltip = vscode.l10n.t('CC Ring - Claude Code Sound Notifier (Disabled)');
-    }
-
-    statusBarItem.show();
-}
-
 export function deactivate() {
     // Clean up on deactivation (optional - user might want to keep hooks)
-    if (statusBarItem) {
-        statusBarItem.dispose();
+    if (statusBarView) {
+        statusBarView.dispose();
     }
 }
 
 // Export API for testing
 export function getAPI() {
     return {
-        hookManager,
-        soundManager
+        container,
+        installCommand,
+        uninstallCommand,
+        testSoundCommand,
+        statusBarView
     };
 }

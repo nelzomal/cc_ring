@@ -116,16 +116,20 @@
     "package": "webpack --mode production --devtool hidden-source-map",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "clean": "rm -rf out dist",
+    "pretest": "npm run clean && npm run compile-tests && npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
     "l10n-extract": "npx @vscode/l10n-dev export -o ./l10n ./src",
-    "l10n-check": "ts-node --transpile-only scripts/check-l10n.ts"
+    "l10n-check": "ts-node --transpile-only scripts/check-l10n.ts",
+    "di-check": "tsx scripts/verify-di-interfaces.ts"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
+    "@types/proper-lockfile": "^4.1.4",
     "@types/vscode": "^1.105.0",
+    "@types/write-file-atomic": "^4.0.3",
     "@vscode/l10n-dev": "^0.0.35",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
@@ -134,12 +138,18 @@
     "eslint": "^9.39.1",
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.3",
     "webpack": "^5.102.1",
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
-    "@prantlf/jsonlint": "^16.0.0"
+    "@prantlf/jsonlint": "^16.0.0",
+    "inversify": "^6.2.2",
+    "proper-lockfile": "^4.1.2",
+    "reflect-metadata": "^0.2.2",
+    "write-file-atomic": "^5.0.1",
+    "zod": "^4.1.12"
   }
 }
