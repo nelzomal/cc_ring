@@ -16,7 +16,12 @@ export const TYPES = {
   // ============================================================================
 
   // Script paths
-  ScriptPath: Symbol.for('ScriptPath'),
+  // ScriptAbsolutePath: For file system operations (write, delete, chmod)
+  // Example: /Users/username/.claude/cc-ring-hook-UUID.sh
+  ScriptAbsolutePath: Symbol.for('ScriptAbsolutePath'),
+  // ScriptRelativePath: For settings.json (portable ~ format)
+  // Example: ~/.claude/cc-ring-hook-UUID.sh
+  ScriptRelativePath: Symbol.for('ScriptRelativePath'),
   ScriptContent: Symbol.for('ScriptContent'),
 
   // Directory paths
@@ -30,6 +35,9 @@ export const TYPES = {
   HookLogPath: Symbol.for('HookLogPath'),
   SettingsPath: Symbol.for('SettingsPath'),
   CoordinationLockPath: Symbol.for('CoordinationLockPath'),
+
+  // Configuration values
+  HookTimeout: Symbol.for('HookTimeout'),
 
   // VSCode API objects
   StatusBarItem: Symbol.for('StatusBarItem'),

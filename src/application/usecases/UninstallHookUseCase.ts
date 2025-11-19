@@ -1,9 +1,9 @@
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
-import { HookInstallationError } from '../errors/HookInstallationError';
-import { HookRepositoryError } from '../errors/HookRepositoryError';
-import { HookInstallationOrchestrator } from '../services/HookInstallationOrchestrator';
-import { TYPES } from '../../shared/types';
+import { HookInstallationError } from '@application/errors/HookInstallationError';
+import { HookRepositoryError } from '@application/errors/HookRepositoryError';
+import { HookInstallationOrchestrator } from '@application/services/HookInstallationOrchestrator';
+import { TYPES } from '@shared/types';
 
 /**
  * Use case: Uninstall hook script and unregister all hooks from Claude Code settings
@@ -16,7 +16,7 @@ import { TYPES } from '../../shared/types';
 export class UninstallHookUseCase {
   constructor(
     @inject(TYPES.HookInstallationOrchestrator) private readonly orchestrator: HookInstallationOrchestrator,
-    @inject(TYPES.ScriptPath) private readonly scriptPath: string,
+    @inject(TYPES.ScriptAbsolutePath) private readonly scriptPath: string,
     @inject(TYPES.ConfigPath) private readonly configPath: string
   ) {}
 

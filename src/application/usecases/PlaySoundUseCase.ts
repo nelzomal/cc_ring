@@ -1,8 +1,8 @@
 import { inject, injectable } from "inversify";
 import "reflect-metadata";
-import { TYPES } from "../../shared/types";
-import { IConfigProvider } from "../ports/IConfigProvider";
-import { ISoundPlayer } from "../ports/ISoundPlayer";
+import { TYPES } from "@shared/types";
+import { IConfigProvider } from "@application/ports/IConfigProvider";
+import { ISoundPlayer } from "@application/ports/ISoundPlayer";
 
 /**
  * Use case: Play notification sound

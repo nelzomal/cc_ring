@@ -3,33 +3,34 @@ import * as os from "os";
 import * as path from "path";
 import "reflect-metadata";
 import * as vscode from "vscode";
-import { TYPES } from "../../shared/types";
+import { TYPES } from "@shared/types";
+import { HOOK_ID } from "@shared/constants";
 
 // Application Layer
-import { IFileSystem } from "../../application/ports/IFileSystem";
-import { IHookRepository } from "../../application/ports/IHookRepository";
-import { IConfigProvider } from "../../application/ports/IConfigProvider";
-import { ISoundPlayer } from "../../application/ports/ISoundPlayer";
-import { ILockManager } from "../../application/ports/ILockManager";
-import { CheckHookStatusUseCase } from "../../application/usecases/CheckHookStatusUseCase";
-import { InstallHookUseCase } from "../../application/usecases/InstallHookUseCase";
-import { PlaySoundUseCase } from "../../application/usecases/PlaySoundUseCase";
-import { UninstallHookUseCase } from "../../application/usecases/UninstallHookUseCase";
-import { HookInstallationOrchestrator } from "../../application/services/HookInstallationOrchestrator";
+import { IFileSystem } from "@application/ports/IFileSystem";
+import { IHookRepository } from "@application/ports/IHookRepository";
+import { IConfigProvider } from "@application/ports/IConfigProvider";
+import { ISoundPlayer } from "@application/ports/ISoundPlayer";
+import { ILockManager } from "@application/ports/ILockManager";
+import { CheckHookStatusUseCase } from "@application/usecases/CheckHookStatusUseCase";
+import { InstallHookUseCase } from "@application/usecases/InstallHookUseCase";
+import { PlaySoundUseCase } from "@application/usecases/PlaySoundUseCase";
+import { UninstallHookUseCase } from "@application/usecases/UninstallHookUseCase";
+import { HookInstallationOrchestrator } from "@application/services/HookInstallationOrchestrator";
 
 // Infrastructure Layer
-import { LockManager } from "../../infrastructure/adapters/utilities/LockManager";
-import { HookScriptGenerator } from "../../infrastructure/services/HookScriptGenerator";
-import { ClaudeCodeHookRepository } from "../../infrastructure/persistence/claude-settings/ClaudeCodeHookRepository";
-import { FileSystem } from "../../infrastructure/adapters/file-system/FileSystem";
-import { AfplaySoundPlayer } from "../../infrastructure/adapters/sound/AfplaySoundPlayer";
-import { VSCodeConfigProvider } from "../../infrastructure/adapters/config/VSCodeConfigProvider";
+import { LockManager } from "@infrastructure/adapters/utilities/LockManager";
+import { HookScriptGenerator } from "@infrastructure/services/HookScriptGenerator";
+import { ClaudeCodeHookRepository } from "@infrastructure/persistence/claude-settings/ClaudeCodeHookRepository";
+import { FileSystem } from "@infrastructure/adapters/file-system/FileSystem";
+import { AfplaySoundPlayer } from "@infrastructure/adapters/sound/AfplaySoundPlayer";
+import { VSCodeConfigProvider } from "@infrastructure/adapters/config/VSCodeConfigProvider";
 
 // Presentation Layer
-import { InstallHookCommand } from "../vscode/commands/InstallHookCommand";
-import { TestSoundCommand } from "../vscode/commands/TestSoundCommand";
-import { UninstallHookCommand } from "../vscode/commands/UninstallHookCommand";
-import { StatusBarView } from "../vscode/views/StatusBarView";
+import { InstallHookCommand } from "@presentation/vscode/commands/InstallHookCommand";
+import { TestSoundCommand } from "@presentation/vscode/commands/TestSoundCommand";
+import { UninstallHookCommand } from "@presentation/vscode/commands/UninstallHookCommand";
+import { StatusBarView } from "@presentation/vscode/views/StatusBarView";
 
 /**
  * Create and configure the InversifyJS container
@@ -51,8 +52,12 @@ export function createContainer(
   // RUNTIME VALUES
   // ============================================================================
 
-  const claudeDir = path.join(os.homedir(), ".claude");
-  const hookScriptPath = path.join(claudeDir, "cc-ring-hook.sh");
+  // Allow CLAUDE_HOME override for testing (defaults to ~/.claude)
+  const claudeDir = process.env.CLAUDE_HOME || path.join(os.homedir(), ".claude");
+  // Absolute path for file system operations
+  const hookScriptAbsolutePath = path.join(claudeDir, `cc-ring-hook-${HOOK_ID}.sh`);
+  // Relative path with ~ for settings.json (portable)
+  const hookScriptRelativePath = `~/.claude/cc-ring-hook-${HOOK_ID}.sh`;
   const soundsDir = path.join(context.extensionPath, "sounds");
   const configPath = path.join(claudeDir, "cc-ring-config.json");
   const errorLogPath = path.join(claudeDir, "cc-ring-error.log");
@@ -61,7 +66,8 @@ export function createContainer(
   const coordinationLockPath = path.join(claudeDir, "cc-ring.lock");
 
   // Bind constant values
-  container.bind<string>(TYPES.ScriptPath).toConstantValue(hookScriptPath);
+  container.bind<string>(TYPES.ScriptAbsolutePath).toConstantValue(hookScriptAbsolutePath);
+  container.bind<string>(TYPES.ScriptRelativePath).toConstantValue(hookScriptRelativePath);
   container.bind<string>(TYPES.BundledSoundsDir).toConstantValue(soundsDir);
   container
     .bind<string>(TYPES.ExtensionPath)
@@ -76,6 +82,9 @@ export function createContainer(
   container
     .bind<string>(TYPES.CoordinationLockPath)
     .toConstantValue(coordinationLockPath);
+  container
+    .bind<number>(TYPES.HookTimeout)
+    .toConstantValue(60);
 
   // ============================================================================
   // DOMAIN LAYER

@@ -38,7 +38,7 @@ import * as path from 'path';
 // Patterns to detect:
 // 1. os.homedir() usage outside container.ts
 //    ❌ const p = path.join(os.homedir(), '.claude', 'hook.sh')
-//    ✅ @inject(TYPES.ScriptPath) private scriptPath: string
+//    ✅ @inject(TYPES.ScriptAbsolutePath) private scriptPath: string
 //
 // 2. context.extensionPath usage outside container.ts/extension.ts
 //    ❌ const sounds = path.join(context.extensionPath, 'sounds')

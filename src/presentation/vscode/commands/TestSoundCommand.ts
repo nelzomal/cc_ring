@@ -1,9 +1,9 @@
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 import * as vscode from 'vscode';
-import { PlaySoundUseCase } from '../../../application/usecases/PlaySoundUseCase';
-import { SoundValidationError } from '../../../domain/errors/SoundValidationError';
-import { TYPES } from '../../../shared/types';
+import { PlaySoundUseCase } from '@application/usecases/PlaySoundUseCase';
+import { SoundValidationError } from '@domain/errors/SoundValidationError';
+import { TYPES } from '@shared/types';
 
 /**
  * Command controller for testing sound playback

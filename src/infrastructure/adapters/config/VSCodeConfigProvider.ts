@@ -1,8 +1,8 @@
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
-import { IConfigProvider } from '../../../application/ports/IConfigProvider';
-import { SoundConfig } from '../../../domain/valueObjects/sound/SoundConfig';
-import { TYPES } from '../../../shared/types';
+import { IConfigProvider } from '@application/ports/IConfigProvider';
+import { SoundConfig } from '@domain/valueObjects/sound/SoundConfig';
+import { TYPES } from '@shared/types';
 import * as vscode from 'vscode';
 import * as path from 'path';
 

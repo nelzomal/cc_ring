@@ -1,10 +1,10 @@
-import { injectable } from 'inversify';
-import 'reflect-metadata';
-import * as fs from 'fs';
-import * as fsPromises from 'fs/promises';
-import * as path from 'path';
-import writeFileAtomic from 'write-file-atomic';
-import { IFileSystem } from '../../../application/ports/IFileSystem';
+import * as fs from "fs";
+import * as fsPromises from "fs/promises";
+import { injectable } from "inversify";
+import * as path from "path";
+import "reflect-metadata";
+import writeFileAtomic from "write-file-atomic";
+import { IFileSystem } from "@application/ports/IFileSystem";
 
 /**
  * File system implementation
@@ -12,20 +12,20 @@ import { IFileSystem } from '../../../application/ports/IFileSystem';
  */
 @injectable()
 export class FileSystem implements IFileSystem {
-  async writeFileAtomic(filePath: string, content: string, options?: { mode?: number }): Promise<void> {
-    // Ensure parent directory exists (write-file-atomic doesn't do this)
+  async writeFileAtomic(
+    filePath: string,
+    content: string,
+    options: { createIfMissing: true; mode?: number }
+  ): Promise<void> {
+    // AI_FIXME need to check createIfMissing
     const dir = path.dirname(filePath);
     await this.ensureDir(dir);
 
-    // Merge default encoding with optional mode setting
     const writeOptions: writeFileAtomic.Options = {
-      encoding: 'utf-8',
-      ...(options?.mode !== undefined && { mode: options.mode })
+      encoding: "utf-8",
+      ...(options?.mode !== undefined && { mode: options.mode }),
     };
 
-    // Use write-file-atomic package for robust atomic writes
-    // Handles temp file creation, fsync, atomic rename, and cleanup
-    // If mode is provided, file permissions are set atomically during write
     await writeFileAtomic(filePath, content, writeOptions);
   }
 
@@ -39,23 +39,31 @@ export class FileSystem implements IFileSystem {
     return fs.existsSync(filePath);
   }
 
-  async readFile(filePath: string, encoding: BufferEncoding = 'utf-8'): Promise<string> {
+  // AI_FIXME: do we need both async and sync versions?
+  async readFile(
+    filePath: string,
+    encoding: BufferEncoding = "utf-8"
+  ): Promise<string> {
     return await fsPromises.readFile(filePath, encoding);
   }
 
-  readFileSync(filePath: string, encoding: BufferEncoding = 'utf-8'): string {
+  readFileSync(filePath: string, encoding: BufferEncoding = "utf-8"): string {
     return fs.readFileSync(filePath, encoding);
   }
 
+  // AI_FIXME do we need to expose this?
   async ensureDir(dirPath: string): Promise<void> {
     if (!fs.existsSync(dirPath)) {
       await fsPromises.mkdir(dirPath, { recursive: true });
     }
   }
 
+  // AI_FIXME: unify with writeFileAtomic?
   async writeConfigFile(filePath: string, content: object): Promise<void> {
     const jsonContent = JSON.stringify(content, null, 2);
-    await this.writeFileAtomic(filePath, jsonContent);
+    await this.writeFileAtomic(filePath, jsonContent, {
+      createIfMissing: true,
+    });
   }
 
   async getFileMtime(filePath: string): Promise<number> {

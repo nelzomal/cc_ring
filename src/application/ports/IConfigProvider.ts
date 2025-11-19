@@ -1,4 +1,4 @@
-import { SoundConfig } from '../../domain/valueObjects/sound/SoundConfig';
+import { SoundConfig } from '@domain/valueObjects/sound/SoundConfig';
 
 /**
  * Configuration provider port

@@ -1,10 +1,10 @@
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
-import { HookInstallationError } from '../errors/HookInstallationError';
-import { HookRepositoryError } from '../errors/HookRepositoryError';
-import { IConfigProvider } from '../ports/IConfigProvider';
-import { HookInstallationOrchestrator } from '../services/HookInstallationOrchestrator';
-import { TYPES } from '../../shared/types';
+import { HookInstallationError } from '@application/errors/HookInstallationError';
+import { HookRepositoryError } from '@application/errors/HookRepositoryError';
+import { IConfigProvider } from '@application/ports/IConfigProvider';
+import { HookInstallationOrchestrator } from '@application/services/HookInstallationOrchestrator';
+import { TYPES } from '@shared/types';
 
 /**
  * Use case: Install hook script and register hooks in Claude Code settings
@@ -19,7 +19,7 @@ export class InstallHookUseCase {
   constructor(
     @inject(TYPES.HookInstallationOrchestrator) private readonly orchestrator: HookInstallationOrchestrator,
     @inject(TYPES.IConfigProvider) private readonly configProvider: IConfigProvider,
-    @inject(TYPES.ScriptPath) private readonly scriptPath: string,
+    @inject(TYPES.ScriptAbsolutePath) private readonly scriptPath: string,
     @inject(TYPES.ConfigPath) private readonly configPath: string,
     @inject(TYPES.ScriptContent) private readonly scriptContent: string
   ) {}

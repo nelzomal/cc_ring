@@ -1,5 +1,5 @@
 import { Volume } from './Volume';
-import { SoundValidationError } from '../../errors/SoundValidationError';
+import { SoundValidationError } from '@domain/errors/SoundValidationError';
 
 /**
  * Sound configuration value object

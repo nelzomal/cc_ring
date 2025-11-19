@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "out/test/e2e",
+    "rootDir": ".",
+    "types": ["mocha", "node"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["test/e2e/**/*"],
+  "exclude": []
+}

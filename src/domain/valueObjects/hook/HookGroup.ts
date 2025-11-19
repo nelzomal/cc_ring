@@ -1,4 +1,4 @@
-import { HookValidationError } from '../../errors/HookValidationError';
+import { HookValidationError } from '@domain/errors/HookValidationError';
 import { HookCommand } from './HookCommand';
 import { HookMatcher } from './types';
 

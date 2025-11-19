@@ -62,7 +62,7 @@ export const HooksSectionDTOSchema = z
     Notification: z.array(MatcherHookGroupDTOSchema).optional(),
     PreToolUse: z.array(MatcherHookGroupDTOSchema).optional(),
   })
-  .strict(); // Reject unknown hook event types
+  .passthrough(); // Allow other hook types that Claude Code supports
 
 export type HooksSectionDTO = z.infer<typeof HooksSectionDTOSchema>;
 
