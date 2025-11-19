@@ -3,3 +3,7 @@ dist
 node_modules
 .vscode-test/
 *.vsix
+
+# Ignore compiled JavaScript files in src directory
+src/**/*.js
+src/**/*.js.map

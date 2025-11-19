@@ -1,12 +1,12 @@
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 import * as path from 'path';
-import { IFileSystem } from '../../application/ports/IFileSystem';
-import { TYPES } from '../../shared/types';
+import { IFileSystem } from '@application/ports/IFileSystem';
+import { TYPES } from '@shared/types';
 import {
     DEFAULT_VOLUME_DECIMAL,
     LOG_ROTATION_LINES
-} from '../../shared/constants';
+} from '@shared/constants';
 
 export interface HookScriptConfig {
     configPath: string;

@@ -1,9 +1,9 @@
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 import * as vscode from 'vscode';
-import { HookInstallationError } from '../../../application/errors/HookInstallationError';
-import { InstallHookUseCase } from '../../../application/usecases/InstallHookUseCase';
-import { TYPES } from '../../../shared/types';
+import { HookInstallationError } from '@application/errors/HookInstallationError';
+import { InstallHookUseCase } from '@application/usecases/InstallHookUseCase';
+import { TYPES } from '@shared/types';
 
 /**
  * Command controller for installing hooks

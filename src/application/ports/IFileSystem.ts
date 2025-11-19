@@ -8,13 +8,14 @@
  */
 export interface IFileSystem {
   /**
-   * Write content to a file atomically using temp file + rename
-   * Prevents corruption from crashes or interruptions
-   * Uses write-file-atomic package for robust atomic writes
-   * @param options Optional settings for the write operation
+   * @param options.createIfMissing Must be true - documents that file will be created if missing
    * @param options.mode Optional file mode (permissions) to set, e.g., 0o755 for executable
    */
-  writeFileAtomic(path: string, content: string, options?: { mode?: number }): Promise<void>;
+  writeFileAtomic(
+    path: string,
+    content: string,
+    options: { createIfMissing: true; mode?: number }
+  ): Promise<void>;
 
   /**
    * Delete a file

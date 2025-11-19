@@ -1,19 +1,23 @@
-import { parse as jsonlintParse } from "@prantlf/jsonlint";
 import { inject, injectable } from "inversify";
-import { lock } from "proper-lockfile";
 import "reflect-metadata";
-import { HookRepositoryError } from "../../../application/errors/HookRepositoryError";
-import { IFileSystem } from "../../../application/ports/IFileSystem";
-import { IHookRepository } from "../../../application/ports/IHookRepository";
-import { TYPES } from "../../../shared/types";
-import { SUPPORTED_HOOKS, HookEventType } from "../../../domain/valueObjects/hook";
+import { IFileSystem } from "@application/ports/IFileSystem";
+import { IHookRepository } from "@application/ports/IHookRepository";
+import { ILockManager } from "@application/ports/ILockManager";
 import {
-  ClaudeCodeSettingsDTO,
-  ClaudeCodeSettingsDTOSchema,
-  HookGroupDTO as HookGroupInfraDTO,
-  MatcherHookGroupDTO as MatcherHookGroupInfraDTO,
-  HookCommandDTO as HookCommandInfraDTO,
-} from "./dto";
+  HookEventType,
+  SUPPORTED_HOOKS,
+} from "@domain/valueObjects/hook";
+import { TYPES } from "@shared/types";
+import {
+  HOOK_EVENT_TYPE_TO_KEY,
+  HookGroup,
+  hasCCRingHooks,
+  installCCRingHooks,
+  isCCRingGroup,
+  readSettingsInfraDTO,
+  removeAllCCRingHooksAndCleanup,
+  writeSettingsInfraDTO,
+} from "./util";
 
 /**
  * Repository for persisting CC Ring hooks to Claude Code settings.json
@@ -32,42 +36,43 @@ import {
  */
 @injectable()
 export class ClaudeCodeHookRepository implements IHookRepository {
-  private readonly LOCK_OPTIONS = {
-    retries: {
-      retries: 5,
-      minTimeout: 100,
-      maxTimeout: 1000,
-    },
-    stale: 10000,
-  };
-
   constructor(
     @inject(TYPES.IFileSystem) private readonly fileSystem: IFileSystem,
-    @inject(TYPES.SettingsPath) private readonly settingsPath: string
+    @inject(TYPES.SettingsPath) private readonly settingsPath: string,
+    @inject(TYPES.ScriptRelativePath)
+    private readonly scriptRelativePath: string,
+    @inject(TYPES.ILockManager) private readonly lockManager: ILockManager,
+    @inject(TYPES.CoordinationLockPath)
+    private readonly coordinationLockPath: string,
+    @inject(TYPES.HookTimeout) private readonly hookTimeout: number
   ) {}
 
   /**
    * Check if CC Ring hooks are installed in settings.json
    */
   async isInstalled(): Promise<boolean> {
-    const release = await lock(this.settingsPath, this.LOCK_OPTIONS);
-
-    try {
-      const infraDTO = await this.readSettingsInfraDTO();
+    return this.lockManager.withLock(this.coordinationLockPath, async () => {
+      const infraDTO = await readSettingsInfraDTO(
+        this.fileSystem,
+        this.settingsPath
+      );
 
       if (!infraDTO.hooks) {
         return false;
       }
 
+      // AI_FIXME move to util and make sure all EventTypes are installed, if partial installation, then throw error and show user
       // Check if any CC Ring hooks exist in any event type
-      const hasStopHooks = infraDTO.hooks.Stop?.some((group) => this.isCCRingGroup(group)) ?? false;
-      const hasNotificationHooks = infraDTO.hooks.Notification?.some((group) => this.isCCRingMatcherGroup(group)) ?? false;
-      const hasPreToolUseHooks = infraDTO.hooks.PreToolUse?.some((group) => this.isCCRingMatcherGroup(group)) ?? false;
-
-      return hasStopHooks || hasNotificationHooks || hasPreToolUseHooks;
-    } finally {
-      await release();
-    }
+      return Object.values(HookEventType).some((eventType) => {
+        const key = HOOK_EVENT_TYPE_TO_KEY[eventType];
+        const groups = infraDTO.hooks?.[key] as HookGroup[] | undefined;
+        return (
+          groups?.some((group) =>
+            isCCRingGroup(group, this.scriptRelativePath)
+          ) ?? false
+        );
+      });
+    });
   }
 
   /**
@@ -75,258 +80,42 @@ export class ClaudeCodeHookRepository implements IHookRepository {
    * Generates hook groups for all SUPPORTED_HOOKS using the provided script path
    */
   async install(scriptPath: string): Promise<void> {
-    const release = await lock(this.settingsPath, this.LOCK_OPTIONS);
+    // Note: Lock is managed by HookInstallationOrchestrator, not here
+    // Read existing settings
+    const infraDTO = await readSettingsInfraDTO(
+      this.fileSystem,
+      this.settingsPath
+    );
 
-    try {
-      // Read existing settings
-      const infraDTO = await this.readSettingsInfraDTO();
+    // Remove all existing CC Ring hooks and cleanup
+    removeAllCCRingHooksAndCleanup(infraDTO, this.scriptRelativePath);
 
-      // Ensure hooks structure exists
-      if (!infraDTO.hooks) {
-        infraDTO.hooks = {};
-      }
+    // Install new CC Ring hooks with merge logic (handles structure and deduplication)
+    installCCRingHooks(infraDTO, scriptPath, this.hookTimeout, SUPPORTED_HOOKS);
 
-      // Remove all existing CC Ring hooks
-      if (infraDTO.hooks.Stop) {
-        infraDTO.hooks.Stop = infraDTO.hooks.Stop.filter((group) => !this.isCCRingGroup(group));
-      }
-      if (infraDTO.hooks.Notification) {
-        infraDTO.hooks.Notification = infraDTO.hooks.Notification.filter(
-          (group) => !this.isCCRingMatcherGroup(group)
-        );
-      }
-      if (infraDTO.hooks.PreToolUse) {
-        infraDTO.hooks.PreToolUse = infraDTO.hooks.PreToolUse.filter(
-          (group) => !this.isCCRingMatcherGroup(group)
-        );
-      }
-
-      // Generate hook command from script path
-      const hookCommand: HookCommandInfraDTO = {
-        type: "command",
-        command: scriptPath,
-        timeout: 5,
-      };
-
-      // Add new CC Ring hooks for all SUPPORTED_HOOKS
-      for (const supportedHook of SUPPORTED_HOOKS) {
-        if (supportedHook.eventType === HookEventType.Stop) {
-          // Stop hooks don't have matchers
-          if (!infraDTO.hooks.Stop) {
-            infraDTO.hooks.Stop = [];
-          }
-          infraDTO.hooks.Stop.push({
-            hooks: [hookCommand],
-          });
-        } else if (supportedHook.eventType === HookEventType.Notification) {
-          // Notification hooks have matchers
-          if (!infraDTO.hooks.Notification) {
-            infraDTO.hooks.Notification = [];
-          }
-          infraDTO.hooks.Notification.push({
-            matcher: supportedHook.matcher as string,
-            hooks: [hookCommand],
-          });
-        } else if (supportedHook.eventType === HookEventType.PreToolUse) {
-          // PreToolUse hooks have matchers
-          if (!infraDTO.hooks.PreToolUse) {
-            infraDTO.hooks.PreToolUse = [];
-          }
-          infraDTO.hooks.PreToolUse.push({
-            matcher: supportedHook.matcher as string,
-            hooks: [hookCommand],
-          });
-        }
-      }
-
-      // Apply JSON conventions (deduplication, cleanup)
-      this.removeDuplicates(infraDTO);
-      this.cleanupEmptyStructures(infraDTO);
-
-      // Write back to file
-      await this.writeSettingsInfraDTO(infraDTO);
-    } finally {
-      await release();
-    }
+    // Write back to file
+    await writeSettingsInfraDTO(this.fileSystem, this.settingsPath, infraDTO);
   }
 
   /**
    * Remove all CC Ring hooks from settings.json
    */
   async uninstall(): Promise<void> {
-    const release = await lock(this.settingsPath, this.LOCK_OPTIONS);
+    // Note: Lock is managed by HookInstallationOrchestrator, not here
+    const infraDTO = await readSettingsInfraDTO(
+      this.fileSystem,
+      this.settingsPath
+    );
 
-    try {
-      const infraDTO = await this.readSettingsInfraDTO();
-
-      if (!infraDTO.hooks) {
-        return; // Nothing to uninstall
-      }
-
-      // Remove all CC Ring hooks
-      if (infraDTO.hooks.Stop) {
-        infraDTO.hooks.Stop = infraDTO.hooks.Stop.filter((group) => !this.isCCRingGroup(group));
-      }
-      if (infraDTO.hooks.Notification) {
-        infraDTO.hooks.Notification = infraDTO.hooks.Notification.filter(
-          (group) => !this.isCCRingMatcherGroup(group)
-        );
-      }
-      if (infraDTO.hooks.PreToolUse) {
-        infraDTO.hooks.PreToolUse = infraDTO.hooks.PreToolUse.filter(
-          (group) => !this.isCCRingMatcherGroup(group)
-        );
-      }
-
-      // Cleanup empty structures
-      this.cleanupEmptyStructures(infraDTO);
-
-      // Write back to file
-      await this.writeSettingsInfraDTO(infraDTO);
-    } finally {
-      await release();
-    }
-  }
-
-  /**
-   * Read and validate settings.json as ClaudeCodeSettingsDTO
-   */
-  private async readSettingsInfraDTO(): Promise<ClaudeCodeSettingsDTO> {
-    if (!this.fileSystem.fileExists(this.settingsPath)) {
-      return {};
+    // Check if there are CC Ring hooks to uninstall
+    if (!hasCCRingHooks(infraDTO, this.scriptRelativePath)) {
+      return; // Nothing to uninstall
     }
 
-    const content = await this.fileSystem.readFile(this.settingsPath, "utf8");
+    // Remove all CC Ring hooks and cleanup
+    removeAllCCRingHooksAndCleanup(infraDTO, this.scriptRelativePath);
 
-    // Handle empty file
-    if (!content || content.trim() === "") {
-      return {};
-    }
-
-    try {
-      // Parse JSON with duplicate key detection
-      const parsed = jsonlintParse(content, {
-        allowDuplicateObjectKeys: false,
-      });
-
-      // Validate structure with Zod
-      const validated = ClaudeCodeSettingsDTOSchema.parse(parsed);
-
-      return validated;
-    } catch (error) {
-      throw new HookRepositoryError(
-        "Hook storage file corrupted at ~/.claude/settings.json. Please fix or delete it manually.",
-        error as Error
-      );
-    }
-  }
-
-  /**
-   * Write ClaudeCodeSettingsDTO to settings.json
-   */
-  private async writeSettingsInfraDTO(infraDTO: ClaudeCodeSettingsDTO): Promise<void> {
-    // Validate before writing
-    ClaudeCodeSettingsDTOSchema.parse(infraDTO);
-
-    const content = JSON.stringify(infraDTO, null, 2);
-    await this.fileSystem.writeFileAtomic(this.settingsPath, content);
-  }
-
-  /**
-   * Check if a HookCommandInfraDTO belongs to CC Ring
-   */
-  private isCCRingCommand(cmd: HookCommandInfraDTO): boolean {
-    return cmd.command?.includes("cc-ring-hook") || false;
-  }
-
-  /**
-   * Check if a HookGroupInfraDTO contains any CC Ring hooks
-   */
-  private isCCRingGroup(group: HookGroupInfraDTO): boolean {
-    return group.hooks.some((hook) => this.isCCRingCommand(hook));
-  }
-
-  /**
-   * Check if a MatcherHookGroupInfraDTO contains any CC Ring hooks
-   */
-  private isCCRingMatcherGroup(group: MatcherHookGroupInfraDTO): boolean {
-    return group.hooks.some((hook) => this.isCCRingCommand(hook));
-  }
-
-  /**
-   * JSON Convention: Remove duplicate groups
-   * Ensures idempotent saves (saving twice = same result)
-   */
-  private removeDuplicates(infraDTO: ClaudeCodeSettingsDTO): void {
-    if (!infraDTO.hooks) {
-      return;
-    }
-
-    // Helper to check if two hook commands are equal
-    const commandsEqual = (a: HookCommandInfraDTO, b: HookCommandInfraDTO) =>
-      a.type === b.type && a.command === b.command && a.timeout === b.timeout;
-
-    // Helper to check if two arrays of commands are equal
-    const commandArraysEqual = (a: HookCommandInfraDTO[], b: HookCommandInfraDTO[]) => {
-      if (a.length !== b.length) {
-        return false;
-      }
-      return a.every((cmd, i) => commandsEqual(cmd, b[i]));
-    };
-
-    // Remove duplicates from Stop hooks
-    if (infraDTO.hooks.Stop) {
-      infraDTO.hooks.Stop = infraDTO.hooks.Stop.filter((group, index, self) =>
-        index === self.findIndex((g) => commandArraysEqual(g.hooks, group.hooks))
-      );
-    }
-
-    // Remove duplicates from Notification hooks
-    if (infraDTO.hooks.Notification) {
-      infraDTO.hooks.Notification = infraDTO.hooks.Notification.filter(
-        (group, index, self) =>
-          index ===
-          self.findIndex(
-            (g) => g.matcher === group.matcher && commandArraysEqual(g.hooks, group.hooks)
-          )
-      );
-    }
-
-    // Remove duplicates from PreToolUse hooks
-    if (infraDTO.hooks.PreToolUse) {
-      infraDTO.hooks.PreToolUse = infraDTO.hooks.PreToolUse.filter(
-        (group, index, self) =>
-          index ===
-          self.findIndex(
-            (g) => g.matcher === group.matcher && commandArraysEqual(g.hooks, group.hooks)
-          )
-      );
-    }
-  }
-
-  /**
-   * JSON Convention: Clean up empty structures
-   * Keeps settings.json clean and readable
-   */
-  private cleanupEmptyStructures(infraDTO: ClaudeCodeSettingsDTO): void {
-    if (!infraDTO.hooks) {
-      return;
-    }
-
-    // Remove empty arrays
-    if (infraDTO.hooks.Stop && infraDTO.hooks.Stop.length === 0) {
-      delete infraDTO.hooks.Stop;
-    }
-    if (infraDTO.hooks.Notification && infraDTO.hooks.Notification.length === 0) {
-      delete infraDTO.hooks.Notification;
-    }
-    if (infraDTO.hooks.PreToolUse && infraDTO.hooks.PreToolUse.length === 0) {
-      delete infraDTO.hooks.PreToolUse;
-    }
-
-    // Remove empty hooks object
-    if (Object.keys(infraDTO.hooks).length === 0) {
-      delete infraDTO.hooks;
-    }
+    // Write back to file
+    await writeSettingsInfraDTO(this.fileSystem, this.settingsPath, infraDTO);
   }
 }

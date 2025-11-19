@@ -1,4 +1,4 @@
-import { SoundValidationError } from '../../errors/SoundValidationError';
+import { SoundValidationError } from '@domain/errors/SoundValidationError';
 
 /**
  * Volume value object

@@ -1,8 +1,8 @@
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
-import { ISoundPlayer } from '../../../application/ports/ISoundPlayer';
-import { SoundConfig } from '../../../domain/valueObjects/sound/SoundConfig';
-import { TYPES } from '../../../shared/types';
+import { ISoundPlayer } from '@application/ports/ISoundPlayer';
+import { SoundConfig } from '@domain/valueObjects/sound/SoundConfig';
+import { TYPES } from '@shared/types';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs';

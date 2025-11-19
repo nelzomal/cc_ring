@@ -14,12 +14,13 @@ let container: Container;
 let installCommand: InstallHookCommand;
 let uninstallCommand: UninstallHookCommand;
 let testSoundCommand: TestSoundCommand;
+let statusBarItem: vscode.StatusBarItem;
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log('CC Ring is now active');
 
     // Create status bar (VSCode API object, must be created before container)
-    const statusBarItem = vscode.window.createStatusBarItem(
+    statusBarItem = vscode.window.createStatusBarItem(
         vscode.StatusBarAlignment.Right,
         100
     );
@@ -220,6 +221,7 @@ export function getAPI() {
         installCommand,
         uninstallCommand,
         testSoundCommand,
-        statusBarView
+        statusBarView,
+        statusBarItem  // Expose for E2E testing
     };
 }

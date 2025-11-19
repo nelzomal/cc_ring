@@ -1,9 +1,9 @@
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 import * as vscode from 'vscode';
-import { HookInstallationError } from '../../../application/errors/HookInstallationError';
-import { UninstallHookUseCase } from '../../../application/usecases/UninstallHookUseCase';
-import { TYPES } from '../../../shared/types';
+import { HookInstallationError } from '@application/errors/HookInstallationError';
+import { UninstallHookUseCase } from '@application/usecases/UninstallHookUseCase';
+import { TYPES } from '@shared/types';
 
 /**
  * Command controller for uninstalling hooks

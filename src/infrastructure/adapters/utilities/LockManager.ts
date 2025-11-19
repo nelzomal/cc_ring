@@ -1,5 +1,5 @@
 import * as lockfile from 'proper-lockfile';
-import { ILockManager } from '../../../application/ports/ILockManager';
+import { ILockManager } from '@application/ports/ILockManager';
 
 /**
  * Lock manager implementation using proper-lockfile.

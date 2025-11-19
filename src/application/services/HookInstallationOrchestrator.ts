@@ -1,10 +1,10 @@
 import { inject, injectable } from "inversify";
 import "reflect-metadata";
-import { TYPES } from "../../shared/types";
-import { HookInstallationError } from "../errors/HookInstallationError";
-import { IFileSystem } from "../ports/IFileSystem";
-import { IHookRepository } from "../ports/IHookRepository";
-import { ILockManager } from "../ports/ILockManager";
+import { TYPES } from "@shared/types";
+import { HookInstallationError } from "@application/errors/HookInstallationError";
+import { IFileSystem } from "@application/ports/IFileSystem";
+import { IHookRepository } from "@application/ports/IHookRepository";
+import { ILockManager } from "@application/ports/ILockManager";
 
 /**
  * Error thrown when settings.json is modified by an external process
@@ -70,7 +70,9 @@ export class HookInstallationOrchestrator {
     private readonly hookRepository: IHookRepository,
     @inject(TYPES.SettingsPath) private readonly settingsPath: string,
     @inject(TYPES.CoordinationLockPath)
-    private readonly coordinationLockPath: string
+    private readonly coordinationLockPath: string,
+    @inject(TYPES.ScriptRelativePath)
+    private readonly scriptRelativePath: string
   ) {
     // Coordination lock prevents concurrent install/uninstall operations
   }
@@ -111,7 +113,7 @@ export class HookInstallationOrchestrator {
         await this.fileWriter.writeFileAtomic(
           params.scriptPath,
           params.scriptContent,
-          { mode: 0o755 }
+          { createIfMissing: true, mode: 0o755 }
         );
         scriptWritten = true;
 
@@ -126,9 +128,10 @@ export class HookInstallationOrchestrator {
         }
 
         // Step 4: Write settings.json (uses repository's own lock)
-        // Repository will generate hook groups for all SUPPORTED_HOOKS using scriptPath
+        // Repository will generate hook groups for all SUPPORTED_HOOKS using scriptRelativePath
+        // Use relative path (~/...) for portability in settings.json
         // This is the final step - if it fails, we cleanup and user retries
-        await this.hookRepository.install(params.scriptPath);
+        await this.hookRepository.install(this.scriptRelativePath);
       } catch (error) {
         // Cleanup files written before failure
         await this.cleanupInstallation(

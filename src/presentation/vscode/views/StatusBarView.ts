@@ -1,8 +1,8 @@
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 import * as vscode from 'vscode';
-import { CheckHookStatusUseCase } from '../../../application/usecases/CheckHookStatusUseCase';
-import { TYPES } from '../../../shared/types';
+import { CheckHookStatusUseCase } from '@application/usecases/CheckHookStatusUseCase';
+import { TYPES } from '@shared/types';
 
 /**
  * Status bar view for hook installation status
