@@ -28,9 +28,7 @@ import { VSCodeConfigProvider } from "@infrastructure/adapters/config/VSCodeConf
 
 // Presentation Layer
 import { InstallHookCommand } from "@presentation/vscode/commands/InstallHookCommand";
-import { TestSoundCommand } from "@presentation/vscode/commands/TestSoundCommand";
 import { UninstallHookCommand } from "@presentation/vscode/commands/UninstallHookCommand";
-import { StatusBarView } from "@presentation/vscode/views/StatusBarView";
 
 /**
  * Create and configure the InversifyJS container
@@ -39,12 +37,10 @@ import { StatusBarView } from "@presentation/vscode/views/StatusBarView";
  * instantiate concrete classes and wire dependencies together.
  *
  * @param context - VSCode extension context
- * @param statusBarItem - VSCode status bar item instance
  * @returns Configured InversifyJS container
  */
 export function createContainer(
-  context: vscode.ExtensionContext,
-  statusBarItem: vscode.StatusBarItem
+  context: vscode.ExtensionContext
 ): Container {
   const container = new Container();
 
@@ -72,9 +68,6 @@ export function createContainer(
   container
     .bind<string>(TYPES.ExtensionPath)
     .toConstantValue(context.extensionPath);
-  container
-    .bind<vscode.StatusBarItem>(TYPES.StatusBarItem)
-    .toConstantValue(statusBarItem);
   container.bind<string>(TYPES.ConfigPath).toConstantValue(configPath);
   container.bind<string>(TYPES.ErrorLogPath).toConstantValue(errorLogPath);
   container.bind<string>(TYPES.HookLogPath).toConstantValue(hookLogPath);
@@ -197,17 +190,6 @@ export function createContainer(
   container
     .bind<UninstallHookCommand>(TYPES.UninstallHookCommand)
     .to(UninstallHookCommand)
-    .inSingletonScope();
-
-  container
-    .bind<TestSoundCommand>(TYPES.TestSoundCommand)
-    .to(TestSoundCommand)
-    .inSingletonScope();
-
-  // Views
-  container
-    .bind<StatusBarView>(TYPES.StatusBarView)
-    .to(StatusBarView)
     .inSingletonScope();
 
   return container;

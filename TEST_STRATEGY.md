@@ -197,47 +197,6 @@ describe('Feature: Hook Persistence', () => {
 
 **Pattern:**
 ```typescript
-describe('Feature: Status Bar Indicator', () => {
-  describe('StatusBarView', () => {
-    let view: StatusBarView;
-    let mockStatusBarItem: MockStatusBarItem;
-    let mockCheckStatusUseCase: MockCheckHookStatusUseCase;
-
-    beforeEach(() => {
-      mockStatusBarItem = new MockStatusBarItem();
-      mockCheckStatusUseCase = new MockCheckHookStatusUseCase();
-      view = new StatusBarView(mockStatusBarItem, mockCheckStatusUseCase);
-    });
-
-    describe('Scenario: Hooks are installed', () => {
-      it('should display installed status with check icon', async () => {
-        // Given
-        mockCheckStatusUseCase.mockResult({ isInstalled: true });
-
-        // When
-        await view.update();
-
-        // Then
-        expect(mockStatusBarItem.text).toBe('$(check) CC Ring');
-        expect(mockStatusBarItem.tooltip).toBe('Hooks installed');
-      });
-    });
-
-    describe('Scenario: Hooks are not installed', () => {
-      it('should display warning status', async () => {
-        // Given
-        mockCheckStatusUseCase.mockResult({ isInstalled: false });
-
-        // When
-        await view.update();
-
-        // Then
-        expect(mockStatusBarItem.text).toBe('$(warning) CC Ring');
-      });
-    });
-  });
-});
-
 describe('Feature: Install Command', () => {
   describe('InstallHookCommand', () => {
     it('should invoke InstallHookUseCase and show success message', async () => {

@@ -88,7 +88,6 @@ Commands and views are concrete:
 
 - ✅ `InstallHookCommand` (concrete)
 - ✅ `UninstallHookCommand` (concrete)
-- ✅ `TestSoundCommand` (concrete)
 - ✅ `StatusBarView` (concrete)
 
 **Rationale:** Presentation components are UI-specific and framework-bound (VSCode). They:

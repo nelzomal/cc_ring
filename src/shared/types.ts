@@ -39,9 +39,6 @@ export const TYPES = {
   // Configuration values
   HookTimeout: Symbol.for('HookTimeout'),
 
-  // VSCode API objects
-  StatusBarItem: Symbol.for('StatusBarItem'),
-
   // ============================================================================
   // DOMAIN LAYER
   // ============================================================================
@@ -90,8 +87,4 @@ export const TYPES = {
   // Commands
   InstallHookCommand: Symbol.for('InstallHookCommand'),
   UninstallHookCommand: Symbol.for('UninstallHookCommand'),
-  TestSoundCommand: Symbol.for('TestSoundCommand'),
-
-  // Views
-  StatusBarView: Symbol.for('StatusBarView'),
 };

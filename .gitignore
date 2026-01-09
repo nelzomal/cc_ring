@@ -7,3 +7,5 @@ node_modules
 # Ignore compiled JavaScript files in src directory
 src/**/*.js
 src/**/*.js.map
+
+.DS_Store

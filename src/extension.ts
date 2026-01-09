@@ -4,42 +4,24 @@ import * as vscode from "vscode";
 import { CheckHookStatusUseCase } from "./application/usecases/CheckHookStatusUseCase";
 import { createContainer } from "./presentation/composition/container";
 import { InstallHookCommand } from "./presentation/vscode/commands/InstallHookCommand";
-import { TestSoundCommand } from "./presentation/vscode/commands/TestSoundCommand";
 import { UninstallHookCommand } from "./presentation/vscode/commands/UninstallHookCommand";
-import { StatusBarView } from "./presentation/vscode/views/StatusBarView";
 import { TYPES } from "./shared/types";
 
-let statusBarView: StatusBarView;
 let container: Container;
 let installCommand: InstallHookCommand;
 let uninstallCommand: UninstallHookCommand;
-let testSoundCommand: TestSoundCommand;
-let statusBarItem: vscode.StatusBarItem;
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log("CC Ring is now active");
 
-  // Create status bar (VSCode API object, must be created before container)
-  statusBarItem = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Right,
-    100
-  );
-  statusBarItem.command = "cc-ring.showStatus";
-  context.subscriptions.push(statusBarItem);
-
   // Initialize InversifyJS container (composition root)
-  container = createContainer(context, statusBarItem);
-
-  // Resolve dependencies from container
-  statusBarView = container.get<StatusBarView>(TYPES.StatusBarView);
-  await statusBarView.update();
+  container = createContainer(context);
 
   // Resolve command controllers from container
   installCommand = container.get<InstallHookCommand>(TYPES.InstallHookCommand);
   uninstallCommand = container.get<UninstallHookCommand>(
     TYPES.UninstallHookCommand
   );
-  testSoundCommand = container.get<TestSoundCommand>(TYPES.TestSoundCommand);
 
   // Install hook on activation if enabled
   const config = vscode.workspace.getConfiguration("cc-ring");
@@ -57,21 +39,9 @@ export async function activate(context: vscode.ExtensionContext) {
       );
     }
 
-    // Check if hook is already installed before showing notification
-    const checkStatusUseCase = container.get<CheckHookStatusUseCase>(
-      TYPES.CheckHookStatusUseCase
-    );
-    const status = await checkStatusUseCase.execute();
-    const wasInstalled = status.isInstalled;
-
     try {
       await installCommand.execute();
-      await statusBarView.update();
-
-      // Only show notification if this was a fresh installation
-      if (!wasInstalled) {
-        // Success message already shown by command
-      }
+      // Success message already shown by command if fresh installation
     } catch (error) {
       // Error already shown by command
       console.error("Failed to install hook on activation:", error);
@@ -79,12 +49,6 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   // Register commands
-  context.subscriptions.push(
-    vscode.commands.registerCommand("cc-ring.testSound", async () => {
-      await testSoundCommand.execute();
-    })
-  );
-
   context.subscriptions.push(
     vscode.commands.registerCommand("cc-ring.selectCustomSound", async () => {
       const uri = await vscode.window.showOpenDialog({
@@ -120,14 +84,12 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("cc-ring.installHook", async () => {
       await installCommand.execute();
-      await statusBarView.update();
     })
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand("cc-ring.uninstallHook", async () => {
       await uninstallCommand.execute();
-      await statusBarView.update();
     })
   );
 
@@ -165,8 +127,6 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration(async (event) => {
       if (event.affectsConfiguration("cc-ring")) {
-        await statusBarView.update();
-
         const config = vscode.workspace.getConfiguration("cc-ring");
 
         // Validate custom sound path
@@ -204,7 +164,6 @@ export async function activate(context: vscode.ExtensionContext) {
         ) {
           try {
             await installCommand.execute();
-            await statusBarView.update();
           } catch (error) {
             console.error("Failed to update config file:", error);
           }
@@ -215,14 +174,12 @@ export async function activate(context: vscode.ExtensionContext) {
           if (config.get("enabled")) {
             try {
               await installCommand.execute();
-              await statusBarView.update();
             } catch (error) {
               console.error("Failed to reinstall hook:", error);
             }
           } else {
             try {
               await uninstallCommand.execute();
-              await statusBarView.update();
             } catch (error) {
               console.error("Failed to uninstall hook:", error);
             }
@@ -238,9 +195,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
   // Clean up on deactivation (optional - user might want to keep hooks)
-  if (statusBarView) {
-    statusBarView.dispose();
-  }
 }
 
 // Export API for testing
@@ -249,8 +203,5 @@ export function getAPI() {
     container,
     installCommand,
     uninstallCommand,
-    testSoundCommand,
-    statusBarView,
-    statusBarItem, // Expose for E2E testing
   };
 }

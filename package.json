@@ -60,14 +60,10 @@
           "default": "complete",
           "enum": [
             "complete",
-            "subtle",
-            "notification",
             "custom"
           ],
           "enumDescriptions": [
             "%config.sound.complete%",
-            "%config.sound.subtle%",
-            "%config.sound.notification%",
             "%config.sound.custom%"
           ],
           "description": "%config.sound.description%",
@@ -82,11 +78,6 @@
       }
     },
     "commands": [
-      {
-        "command": "cc-ring.testSound",
-        "title": "%command.testSound%",
-        "category": "%command.category%"
-      },
       {
         "command": "cc-ring.selectCustomSound",
         "title": "%command.selectCustomSound%",

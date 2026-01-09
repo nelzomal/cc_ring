@@ -12,19 +12,6 @@
         "${workspaceFolder}/dist/**/*.js"
       ],
       "preLaunchTask": "${defaultBuildTask}"
-    },
-    {
-      "name": "Extension Tests",
-      "type": "extensionHost",
-      "request": "launch",
-      "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test/e2e/suite/index"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/out/**/*.js"
-      ],
-      "preLaunchTask": "npm: compile-e2e-tests"
     }
   ]
 }
