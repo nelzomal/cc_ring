@@ -2,9 +2,12 @@ import { IConfigProvider } from '@application/ports/IConfigProvider';
 import { SoundConfig } from '@domain/valueObjects/sound/SoundConfig';
 import * as vscode from 'vscode';
 import * as path from 'path';
-
-const DEFAULT_SOUND = 'complete';
-const DEFAULT_VOLUME = 75;
+import {
+  CONFIG_NAMESPACE,
+  CONFIG_KEYS,
+  DEFAULT_SOUND,
+  DEFAULT_VOLUME_PERCENT,
+} from '@shared/constants';
 
 /**
  * VSCode configuration provider
@@ -35,32 +38,32 @@ export class VSCodeConfigProvider implements IConfigProvider {
    * Get the volume setting (0-100)
    */
   getVolume(): number {
-    const config = vscode.workspace.getConfiguration('cc-ring');
-    return config.get<number>('volume', DEFAULT_VOLUME);
+    const config = vscode.workspace.getConfiguration(CONFIG_NAMESPACE);
+    return config.get<number>(CONFIG_KEYS.VOLUME, DEFAULT_VOLUME_PERCENT);
   }
 
   /**
    * Check if CC Ring is enabled
    */
   isEnabled(): boolean {
-    const config = vscode.workspace.getConfiguration('cc-ring');
-    return config.get<boolean>('enabled', false);
+    const config = vscode.workspace.getConfiguration(CONFIG_NAMESPACE);
+    return config.get<boolean>(CONFIG_KEYS.ENABLED, false);
   }
 
   /**
    * Get custom sound path if configured
    */
   getCustomSoundPath(): string {
-    const config = vscode.workspace.getConfiguration('cc-ring');
-    return config.get<string>('customSoundPath', '');
+    const config = vscode.workspace.getConfiguration(CONFIG_NAMESPACE);
+    return config.get<string>(CONFIG_KEYS.CUSTOM_SOUND_PATH, '');
   }
 
   /**
    * Get selected sound name
    */
   getSound(): string {
-    const config = vscode.workspace.getConfiguration('cc-ring');
-    return config.get<string>('sound', DEFAULT_SOUND);
+    const config = vscode.workspace.getConfiguration(CONFIG_NAMESPACE);
+    return config.get<string>(CONFIG_KEYS.SOUND, DEFAULT_SOUND);
   }
 
   /**

@@ -2,6 +2,12 @@ import * as vscode from "vscode";
 import { buildAppDeps, AppDeps } from "./deps";
 import { InstallHookCommand } from "./presentation/vscode/commands/InstallHookCommand";
 import { UninstallHookCommand } from "./presentation/vscode/commands/UninstallHookCommand";
+import {
+  COMMAND_IDS,
+  CONFIG_NAMESPACE,
+  CONFIG_KEYS,
+  DEFAULT_SOUND,
+} from "./shared/constants";
 
 let appDeps: AppDeps;
 let installCommand: InstallHookCommand;
@@ -18,12 +24,12 @@ export async function activate(context: vscode.ExtensionContext) {
   uninstallCommand = appDeps.presentation.uninstallHookCommand;
 
   // Install hook on activation if enabled
-  const config = vscode.workspace.getConfiguration("cc-ring");
+  const config = vscode.workspace.getConfiguration(CONFIG_NAMESPACE);
 
-  if (config.get("enabled")) {
+  if (config.get(CONFIG_KEYS.ENABLED)) {
     // Validate custom sound configuration
-    const sound = config.get<string>("sound", "complete");
-    const customSoundPath = config.get<string>("customSoundPath", "");
+    const sound = config.get<string>(CONFIG_KEYS.SOUND, DEFAULT_SOUND);
+    const customSoundPath = config.get<string>(CONFIG_KEYS.CUSTOM_SOUND_PATH, "");
 
     if (sound === "custom" && !customSoundPath) {
       vscode.window.showWarningMessage(
@@ -44,7 +50,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Register commands
   context.subscriptions.push(
-    vscode.commands.registerCommand("cc-ring.selectCustomSound", async () => {
+    vscode.commands.registerCommand(COMMAND_IDS.SELECT_CUSTOM_SOUND, async () => {
       const uri = await vscode.window.showOpenDialog({
         canSelectFiles: true,
         canSelectFolders: false,
@@ -57,14 +63,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
       if (uri && uri[0]) {
         // TODO should use ConfigProvider to update settings
-        const config = vscode.workspace.getConfiguration("cc-ring");
+        const config = vscode.workspace.getConfiguration(CONFIG_NAMESPACE);
         await config.update(
-          "customSoundPath",
+          CONFIG_KEYS.CUSTOM_SOUND_PATH,
           uri[0].fsPath,
           vscode.ConfigurationTarget.Global
         );
         await config.update(
-          "sound",
+          CONFIG_KEYS.SOUND,
           "custom",
           vscode.ConfigurationTarget.Global
         );
@@ -76,23 +82,23 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("cc-ring.installHook", async () => {
+    vscode.commands.registerCommand(COMMAND_IDS.INSTALL_HOOK, async () => {
       await installCommand.execute();
     })
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("cc-ring.uninstallHook", async () => {
+    vscode.commands.registerCommand(COMMAND_IDS.UNINSTALL_HOOK, async () => {
       await uninstallCommand.execute();
     })
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("cc-ring.showStatus", async () => {
-      const config = vscode.workspace.getConfiguration("cc-ring");
-      const enabled = config.get("enabled");
-      const volume = config.get("volume");
-      const sound = config.get("sound");
+    vscode.commands.registerCommand(COMMAND_IDS.SHOW_STATUS, async () => {
+      const config = vscode.workspace.getConfiguration(CONFIG_NAMESPACE);
+      const enabled = config.get(CONFIG_KEYS.ENABLED);
+      const volume = config.get(CONFIG_KEYS.VOLUME);
+      const sound = config.get(CONFIG_KEYS.SOUND);
 
       const status = await appDeps.app.checkHookStatusUseCase.execute();
       const statusText = enabled
@@ -117,12 +123,12 @@ export async function activate(context: vscode.ExtensionContext) {
   // Listen for configuration changes
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration(async (event) => {
-      if (event.affectsConfiguration("cc-ring")) {
-        const config = vscode.workspace.getConfiguration("cc-ring");
+      if (event.affectsConfiguration(CONFIG_NAMESPACE)) {
+        const config = vscode.workspace.getConfiguration(CONFIG_NAMESPACE);
 
         // Validate custom sound path
-        const sound = config.get<string>("sound", "complete");
-        const customSoundPath = config.get<string>("customSoundPath", "");
+        const sound = config.get<string>(CONFIG_KEYS.SOUND, DEFAULT_SOUND);
+        const customSoundPath = config.get<string>(CONFIG_KEYS.CUSTOM_SOUND_PATH, "");
 
         if (sound === "custom" && !customSoundPath) {
           const choice = await vscode.window.showWarningMessage(
@@ -132,18 +138,18 @@ export async function activate(context: vscode.ExtensionContext) {
           );
 
           if (choice === vscode.l10n.t("Select Sound File")) {
-            await vscode.commands.executeCommand("cc-ring.selectCustomSound");
+            await vscode.commands.executeCommand(COMMAND_IDS.SELECT_CUSTOM_SOUND);
           }
         }
 
         // Handle different types of setting changes
-        const enabledChanged = event.affectsConfiguration("cc-ring.enabled");
-        const soundChanged = event.affectsConfiguration("cc-ring.sound");
-        const volumeChanged = event.affectsConfiguration("cc-ring.volume");
+        const enabledChanged = event.affectsConfiguration(`${CONFIG_NAMESPACE}.${CONFIG_KEYS.ENABLED}`);
+        const soundChanged = event.affectsConfiguration(`${CONFIG_NAMESPACE}.${CONFIG_KEYS.SOUND}`);
+        const volumeChanged = event.affectsConfiguration(`${CONFIG_NAMESPACE}.${CONFIG_KEYS.VOLUME}`);
         const customPathChanged = event.affectsConfiguration(
-          "cc-ring.customSoundPath"
+          `${CONFIG_NAMESPACE}.${CONFIG_KEYS.CUSTOM_SOUND_PATH}`
         );
-        const hooksChanged = event.affectsConfiguration("cc-ring.hooks");
+        const hooksChanged = event.affectsConfiguration(`${CONFIG_NAMESPACE}.${CONFIG_KEYS.HOOKS}`);
 
         // If sound or volume changed, reinstall to update config file
         if (
@@ -151,7 +157,7 @@ export async function activate(context: vscode.ExtensionContext) {
             volumeChanged ||
             customPathChanged ||
             hooksChanged) &&
-          config.get("enabled")
+          config.get(CONFIG_KEYS.ENABLED)
         ) {
           try {
             await installCommand.execute();
@@ -162,7 +168,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
         // If enabled setting changed, install/uninstall hook
         if (enabledChanged) {
-          if (config.get("enabled")) {
+          if (config.get(CONFIG_KEYS.ENABLED)) {
             try {
               await installCommand.execute();
             } catch (error) {

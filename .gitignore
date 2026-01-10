@@ -9,3 +9,6 @@ src/**/*.js
 src/**/*.js.map
 
 .DS_Store
+
+# Auto-generated from package.json
+src/shared/generated-config.ts

@@ -1,7 +1,14 @@
 import * as os from "os";
 import * as path from "path";
 import * as vscode from "vscode";
-import { HOOK_ID } from "@shared/constants";
+import {
+  HOOK_ID,
+  HOOK_SCRIPT_PREFIX,
+  CONFIG_FILE_PREFIX,
+  ERROR_LOG_FILENAME,
+  HOOK_LOG_FILENAME,
+  LOCK_FILENAME,
+} from "@shared/constants";
 import { AppDeps, RuntimeConfig, VSCodeRuntime } from "./AppDeps";
 import { buildInfraDeps } from "./buildInfraDeps";
 import { buildAppLayerDeps } from "./buildAppLayerDeps";
@@ -20,8 +27,8 @@ function buildRuntimeConfig(context: vscode.ExtensionContext): RuntimeConfig {
 
   return {
     // Script paths
-    scriptAbsolutePath: path.join(claudeDir, `cc-ring-hook-${HOOK_ID}.sh`),
-    scriptRelativePath: `~/.claude/cc-ring-hook-${HOOK_ID}.sh`,
+    scriptAbsolutePath: path.join(claudeDir, `${HOOK_SCRIPT_PREFIX}-${HOOK_ID}.sh`),
+    scriptRelativePath: `~/.claude/${HOOK_SCRIPT_PREFIX}-${HOOK_ID}.sh`,
 
     // Directory paths
     bundledSoundsDir: path.join(context.extensionPath, "sounds"),
@@ -29,11 +36,11 @@ function buildRuntimeConfig(context: vscode.ExtensionContext): RuntimeConfig {
     claudeDir,
 
     // Configuration paths
-    configPath: path.join(claudeDir, "cc-ring-config.json"),
-    errorLogPath: path.join(claudeDir, "cc-ring-error.log"),
-    hookLogPath: path.join(claudeDir, "cc-ring-hook.log"),
+    configPath: path.join(claudeDir, `${CONFIG_FILE_PREFIX}.json`),
+    errorLogPath: path.join(claudeDir, ERROR_LOG_FILENAME),
+    hookLogPath: path.join(claudeDir, HOOK_LOG_FILENAME),
     settingsPath: path.join(claudeDir, "settings.json"),
-    coordinationLockPath: path.join(claudeDir, "cc-ring.lock"),
+    coordinationLockPath: path.join(claudeDir, LOCK_FILENAME),
 
     // Configuration values
     hookTimeout: 60,
