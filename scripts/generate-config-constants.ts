@@ -7,7 +7,7 @@
  * - Configuration default values
  * - Command IDs
  *
- * Run: npm run generate:constants
+ * Run: npm run generate
  */
 
 import * as fs from "fs";
@@ -116,7 +116,7 @@ function main() {
 
   // Generate TypeScript content
   const tsContent = `// AUTO-GENERATED from package.json - Do not edit manually
-// Run \`npm run generate:constants\` to regenerate
+// Run \`npm run generate\` to regenerate
 
 export const CONFIG_DEFAULTS = {
 ${Object.entries(defaults)
