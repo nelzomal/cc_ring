@@ -1,10 +1,7 @@
-import { injectable, inject } from 'inversify';
-import 'reflect-metadata';
 import { HookInstallationError } from '@application/errors/HookInstallationError';
 import { HookRepositoryError } from '@application/errors/HookRepositoryError';
 import { IConfigProvider } from '@application/ports/IConfigProvider';
 import { HookInstallationOrchestrator } from '@application/services/HookInstallationOrchestrator';
-import { TYPES } from '@shared/types';
 
 /**
  * Use case: Install hook script and register hooks in Claude Code settings
@@ -14,14 +11,13 @@ import { TYPES } from '@shared/types';
  * - Delegate to orchestrator for atomic multi-file write
  * - Orchestrator uses repository to install hooks for all SUPPORTED_HOOKS
  */
-@injectable()
 export class InstallHookUseCase {
   constructor(
-    @inject(TYPES.HookInstallationOrchestrator) private readonly orchestrator: HookInstallationOrchestrator,
-    @inject(TYPES.IConfigProvider) private readonly configProvider: IConfigProvider,
-    @inject(TYPES.ScriptAbsolutePath) private readonly scriptPath: string,
-    @inject(TYPES.ConfigPath) private readonly configPath: string,
-    @inject(TYPES.ScriptContent) private readonly scriptContent: string
+    private readonly orchestrator: HookInstallationOrchestrator,
+    private readonly configProvider: IConfigProvider,
+    private readonly scriptPath: string,
+    private readonly configPath: string,
+    private readonly scriptContent: string
   ) {}
 
   async execute(): Promise<void> {

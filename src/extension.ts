@@ -1,27 +1,21 @@
-import { Container } from "inversify";
-import "reflect-metadata"; // MUST be imported first for InversifyJS
 import * as vscode from "vscode";
-import { CheckHookStatusUseCase } from "./application/usecases/CheckHookStatusUseCase";
-import { createContainer } from "./presentation/composition/container";
+import { buildAppDeps, AppDeps } from "./deps";
 import { InstallHookCommand } from "./presentation/vscode/commands/InstallHookCommand";
 import { UninstallHookCommand } from "./presentation/vscode/commands/UninstallHookCommand";
-import { TYPES } from "./shared/types";
 
-let container: Container;
+let appDeps: AppDeps;
 let installCommand: InstallHookCommand;
 let uninstallCommand: UninstallHookCommand;
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log("CC Ring is now active");
 
-  // Initialize InversifyJS container (composition root)
-  container = createContainer(context);
+  // Build typed dependency graph (composition root)
+  appDeps = buildAppDeps(context);
 
-  // Resolve command controllers from container
-  installCommand = container.get<InstallHookCommand>(TYPES.InstallHookCommand);
-  uninstallCommand = container.get<UninstallHookCommand>(
-    TYPES.UninstallHookCommand
-  );
+  // Get command controllers from dependency graph
+  installCommand = appDeps.presentation.installHookCommand;
+  uninstallCommand = appDeps.presentation.uninstallHookCommand;
 
   // Install hook on activation if enabled
   const config = vscode.workspace.getConfiguration("cc-ring");
@@ -100,10 +94,7 @@ export async function activate(context: vscode.ExtensionContext) {
       const volume = config.get("volume");
       const sound = config.get("sound");
 
-      const checkStatusUseCase = container.get<CheckHookStatusUseCase>(
-        TYPES.CheckHookStatusUseCase
-      );
-      const status = await checkStatusUseCase.execute();
+      const status = await appDeps.app.checkHookStatusUseCase.execute();
       const statusText = enabled
         ? vscode.l10n.t("Enabled")
         : vscode.l10n.t("Disabled");
@@ -200,7 +191,7 @@ export function deactivate() {
 // Export API for testing
 export function getAPI() {
   return {
-    container,
+    appDeps,
     installCommand,
     uninstallCommand,
   };

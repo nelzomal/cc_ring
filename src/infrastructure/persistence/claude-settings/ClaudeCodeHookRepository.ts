@@ -1,5 +1,3 @@
-import { inject, injectable } from "inversify";
-import "reflect-metadata";
 import { IFileSystem } from "@application/ports/IFileSystem";
 import { IHookRepository } from "@application/ports/IHookRepository";
 import { ILockManager } from "@application/ports/ILockManager";
@@ -7,7 +5,6 @@ import {
   HookEventType,
   SUPPORTED_HOOKS,
 } from "@domain/valueObjects/hook";
-import { TYPES } from "@shared/types";
 import {
   HOOK_EVENT_TYPE_TO_KEY,
   HookGroup,
@@ -34,17 +31,14 @@ import {
  * Data Flow:
  * Application (scriptPath) → Repository (generates hook groups using SUPPORTED_HOOKS) → ClaudeCodeSettingsDTO → File
  */
-@injectable()
 export class ClaudeCodeHookRepository implements IHookRepository {
   constructor(
-    @inject(TYPES.IFileSystem) private readonly fileSystem: IFileSystem,
-    @inject(TYPES.SettingsPath) private readonly settingsPath: string,
-    @inject(TYPES.ScriptRelativePath)
+    private readonly fileSystem: IFileSystem,
+    private readonly settingsPath: string,
     private readonly scriptRelativePath: string,
-    @inject(TYPES.ILockManager) private readonly lockManager: ILockManager,
-    @inject(TYPES.CoordinationLockPath)
+    private readonly lockManager: ILockManager,
     private readonly coordinationLockPath: string,
-    @inject(TYPES.HookTimeout) private readonly hookTimeout: number
+    private readonly hookTimeout: number
   ) {}
 
   /**

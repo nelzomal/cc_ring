@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { CheckHookStatusUseCase } from '@application/usecases/CheckHookStatusUseCase';
 import { ClaudeCodeHookRepository } from '@infrastructure/persistence/claude-settings/ClaudeCodeHookRepository';

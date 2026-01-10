@@ -1,19 +1,13 @@
-import { injectable, inject } from 'inversify';
-import 'reflect-metadata';
 import * as vscode from 'vscode';
 import { HookInstallationError } from '@application/errors/HookInstallationError';
 import { UninstallHookUseCase } from '@application/usecases/UninstallHookUseCase';
-import { TYPES } from '@shared/types';
 
 /**
  * Command controller for uninstalling hooks
  * Thin wrapper around UninstallHookUseCase that handles VSCode UI
  */
-@injectable()
 export class UninstallHookCommand {
-  constructor(
-    @inject(TYPES.UninstallHookUseCase) private readonly useCase: UninstallHookUseCase
-  ) {}
+  constructor(private readonly useCase: UninstallHookUseCase) {}
 
   async execute(): Promise<void> {
     try {

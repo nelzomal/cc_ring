@@ -1,8 +1,5 @@
-import { injectable, inject } from 'inversify';
-import 'reflect-metadata';
 import { IConfigProvider } from '@application/ports/IConfigProvider';
 import { SoundConfig } from '@domain/valueObjects/sound/SoundConfig';
-import { TYPES } from '@shared/types';
 import * as vscode from 'vscode';
 import * as path from 'path';
 
@@ -13,11 +10,8 @@ const DEFAULT_VOLUME = 75;
  * VSCode configuration provider
  * Implements IConfigProvider from application layer
  */
-@injectable()
 export class VSCodeConfigProvider implements IConfigProvider {
-  constructor(
-    @inject(TYPES.ExtensionPath) private readonly extensionPath: string
-  ) {}
+  constructor(private readonly extensionPath: string) {}
 
   /**
    * Get the current sound configuration

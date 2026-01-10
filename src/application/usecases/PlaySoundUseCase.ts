@@ -1,17 +1,12 @@
-import { inject, injectable } from "inversify";
-import "reflect-metadata";
-import { TYPES } from "@shared/types";
 import { IConfigProvider } from "@application/ports/IConfigProvider";
 import { ISoundPlayer } from "@application/ports/ISoundPlayer";
 
 /**
  * Use case: Play notification sound
  */
-@injectable()
 export class PlaySoundUseCase {
   constructor(
-    @inject(TYPES.ISoundPlayer) private readonly soundPlayer: ISoundPlayer,
-    @inject(TYPES.IConfigProvider)
+    private readonly soundPlayer: ISoundPlayer,
     private readonly configProvider: IConfigProvider
   ) {}
 

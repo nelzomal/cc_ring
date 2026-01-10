@@ -1,8 +1,5 @@
-import { injectable, inject } from 'inversify';
-import 'reflect-metadata';
 import { ISoundPlayer } from '@application/ports/ISoundPlayer';
 import { SoundConfig } from '@domain/valueObjects/sound/SoundConfig';
-import { TYPES } from '@shared/types';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs';
@@ -17,11 +14,8 @@ const VALID_SOUND_EXTENSIONS = ['.wav', '.mp3', '.m4a', '.aiff', '.flac'];
  * macOS sound player using afplay command
  * Implements ISoundPlayer from application layer
  */
-@injectable()
 export class AfplaySoundPlayer implements ISoundPlayer {
-  constructor(
-    @inject(TYPES.BundledSoundsDir) private readonly bundledSoundsDir: string
-  ) {}
+  constructor(private readonly bundledSoundsDir: string) {}
 
   /**
    * Play a sound with the given configuration

@@ -1,8 +1,5 @@
-import { injectable, inject } from 'inversify';
-import 'reflect-metadata';
 import { IHookRepository } from '@application/ports/IHookRepository';
 import { IFileSystem } from '@application/ports/IFileSystem';
-import { TYPES } from '@shared/types';
 
 /**
  * Hook status information
@@ -16,12 +13,11 @@ export interface HookStatus {
 /**
  * Use case: Check if hooks are currently installed
  */
-@injectable()
 export class CheckHookStatusUseCase {
   constructor(
-    @inject(TYPES.IHookRepository) private readonly hookRepository: IHookRepository,
-    @inject(TYPES.IFileSystem) private readonly fileWriter: IFileSystem,
-    @inject(TYPES.ScriptAbsolutePath) private readonly scriptPath: string
+    private readonly hookRepository: IHookRepository,
+    private readonly fileWriter: IFileSystem,
+    private readonly scriptPath: string
   ) {}
 
   async execute(): Promise<HookStatus> {

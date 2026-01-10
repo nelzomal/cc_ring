@@ -1,19 +1,13 @@
-import { injectable, inject } from 'inversify';
-import 'reflect-metadata';
 import * as vscode from 'vscode';
 import { HookInstallationError } from '@application/errors/HookInstallationError';
 import { InstallHookUseCase } from '@application/usecases/InstallHookUseCase';
-import { TYPES } from '@shared/types';
 
 /**
  * Command controller for installing hooks
  * Thin wrapper around InstallHookUseCase that handles VSCode UI
  */
-@injectable()
 export class InstallHookCommand {
-  constructor(
-    @inject(TYPES.InstallHookUseCase) private readonly installUseCase: InstallHookUseCase
-  ) {}
+  constructor(private readonly installUseCase: InstallHookUseCase) {}
 
   async execute(): Promise<void> {
     try {

@@ -2,9 +2,6 @@ import { HookInstallationError } from "@application/errors/HookInstallationError
 import { IFileSystem } from "@application/ports/IFileSystem";
 import { IHookRepository } from "@application/ports/IHookRepository";
 import { ILockManager } from "@application/ports/ILockManager";
-import { TYPES } from "@shared/types";
-import { inject, injectable } from "inversify";
-import "reflect-metadata";
 
 /**
  * Error thrown when settings.json is modified by an external process
@@ -62,22 +59,15 @@ export interface UninstallParams {
  * - No complex rollback of settings.json needed
  * - Simpler failure recovery
  */
-@injectable()
 export class HookInstallationOrchestrator {
   constructor(
-    @inject(TYPES.ILockManager) private readonly lockManager: ILockManager,
-    // AI_FIXME: rename fileWriter to fileSystem
-    @inject(TYPES.IFileSystem) private readonly fileWriter: IFileSystem,
-    @inject(TYPES.IHookRepository)
+    private readonly lockManager: ILockManager,
+    private readonly fileWriter: IFileSystem,
     private readonly hookRepository: IHookRepository,
-    @inject(TYPES.SettingsPath) private readonly settingsPath: string,
-    @inject(TYPES.CoordinationLockPath)
+    private readonly settingsPath: string,
     private readonly coordinationLockPath: string,
-    @inject(TYPES.ScriptRelativePath)
     private readonly scriptRelativePath: string
-  ) {
-    // Coordination lock prevents concurrent install/uninstall operations
-  }
+  ) {}
 
   /**
    * Install hooks atomically across 3 files.

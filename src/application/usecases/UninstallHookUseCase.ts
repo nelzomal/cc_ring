@@ -1,9 +1,6 @@
-import { injectable, inject } from 'inversify';
-import 'reflect-metadata';
 import { HookInstallationError } from '@application/errors/HookInstallationError';
 import { HookRepositoryError } from '@application/errors/HookRepositoryError';
 import { HookInstallationOrchestrator } from '@application/services/HookInstallationOrchestrator';
-import { TYPES } from '@shared/types';
 
 /**
  * Use case: Uninstall hook script and unregister all hooks from Claude Code settings
@@ -12,12 +9,11 @@ import { TYPES } from '@shared/types';
  * - Delegate to orchestrator for atomic multi-file cleanup
  * - Orchestrator handles all file operations and locking
  */
-@injectable()
 export class UninstallHookUseCase {
   constructor(
-    @inject(TYPES.HookInstallationOrchestrator) private readonly orchestrator: HookInstallationOrchestrator,
-    @inject(TYPES.ScriptAbsolutePath) private readonly scriptPath: string,
-    @inject(TYPES.ConfigPath) private readonly configPath: string
+    private readonly orchestrator: HookInstallationOrchestrator,
+    private readonly scriptPath: string,
+    private readonly configPath: string
   ) {}
 
   async execute(): Promise<void> {

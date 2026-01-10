@@ -1,8 +1,5 @@
-import { injectable, inject } from 'inversify';
-import 'reflect-metadata';
 import * as path from 'path';
 import { IFileSystem } from '@application/ports/IFileSystem';
-import { TYPES } from '@shared/types';
 import {
     DEFAULT_VOLUME_DECIMAL,
     LOG_ROTATION_LINES
@@ -18,13 +15,12 @@ export interface HookScriptConfig {
 /**
  * Generates bash hook script from template with variable substitution
  */
-@injectable()
 export class HookScriptGenerator {
     private templatePath: string;
 
     constructor(
-        @inject(TYPES.IFileSystem) private fileWriter: IFileSystem,
-        @inject(TYPES.ExtensionPath) extensionPath: string
+        private fileWriter: IFileSystem,
+        extensionPath: string
     ) {
         this.templatePath = path.join(extensionPath, 'src', 'templates', 'hook-script.sh.template');
     }

@@ -1,8 +1,6 @@
 import * as fs from "fs";
 import * as fsPromises from "fs/promises";
-import { injectable } from "inversify";
 import * as path from "path";
-import "reflect-metadata";
 import writeFileAtomic from "write-file-atomic";
 import { IFileSystem } from "@application/ports/IFileSystem";
 
@@ -10,7 +8,6 @@ import { IFileSystem } from "@application/ports/IFileSystem";
  * File system implementation
  * Adapts Node.js fs module to application layer interface
  */
-@injectable()
 export class FileSystem implements IFileSystem {
   async writeFileAtomic(
     filePath: string,
