@@ -93,33 +93,6 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMAND_IDS.SHOW_STATUS, async () => {
-      const config = vscode.workspace.getConfiguration(CONFIG_NAMESPACE);
-      const enabled = config.get(CONFIG_KEYS.ENABLED);
-      const volume = config.get(CONFIG_KEYS.VOLUME);
-      const sound = config.get(CONFIG_KEYS.SOUND);
-
-      const status = await appDeps.app.checkHookStatusUseCase.execute();
-      const statusText = enabled
-        ? vscode.l10n.t("Enabled")
-        : vscode.l10n.t("Disabled");
-
-      // Show total hooks installed (always SUPPORTED_HOOKS.length when installed)
-      const hookCount = status.hooksRegistered ? "7" : "0";
-
-      vscode.window.showInformationMessage(
-        vscode.l10n.t(
-          "CC Ring\nStatus: {0}\nVolume: {1}%\nSound: {2}\nInstalled Hooks: {3}\nHook Location: Global (~/.claude/)",
-          statusText,
-          String(volume),
-          String(sound),
-          hookCount
-        )
-      );
-    })
-  );
-
   // Listen for configuration changes
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration(async (event) => {

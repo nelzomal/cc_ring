@@ -1,5 +1,4 @@
 {
-  "CC Ring\nStatus: {0}\nVolume: {1}%\nSound: {2}\nInstalled Hooks: {3}\nHook Location: Global (~/.claude/)": "CC Ring\n状态：{0}\n音量：{1}%\n声音：{2}\n已安装钩子：{3}\n钩子位置：全局 (~/.claude/)",
   "CC Ring hooks installed successfully!": "CC Ring 钩子安装成功！",
   "Failed to install hooks: {0}": "安装钩子失败：{0}",
   "Unexpected error: {0}": "意外错误：{0}",
@@ -10,8 +9,6 @@
   "Select Custom Sound File": "选择自定义声音文件",
   "Audio Files": "音频文件",
   "Custom sound selected: {0}": "已选择自定义声音：{0}",
-  "Enabled": "已启用",
-  "Disabled": "已禁用",
   "Custom sound selected but no file path specified.": "已选择自定义声音但未指定文件路径。",
   "Select Sound File": "选择声音文件",
   "Dismiss": "忽略"

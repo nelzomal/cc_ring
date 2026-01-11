@@ -6,7 +6,6 @@ import { ISoundPlayer } from "@application/ports/ISoundPlayer";
 import { ILockManager } from "@application/ports/ILockManager";
 import { HookScriptGenerator } from "@infrastructure/services/HookScriptGenerator";
 import { HookInstallationOrchestrator } from "@application/services/HookInstallationOrchestrator";
-import { CheckHookStatusUseCase } from "@application/usecases/CheckHookStatusUseCase";
 import { InstallHookUseCase } from "@application/usecases/InstallHookUseCase";
 import { UninstallHookUseCase } from "@application/usecases/UninstallHookUseCase";
 import { PlaySoundUseCase } from "@application/usecases/PlaySoundUseCase";
@@ -54,7 +53,6 @@ export interface InfraDeps {
  */
 export interface AppLayerDeps {
   readonly hookInstallationOrchestrator: HookInstallationOrchestrator;
-  readonly checkHookStatusUseCase: CheckHookStatusUseCase;
   readonly installHookUseCase: InstallHookUseCase;
   readonly uninstallHookUseCase: UninstallHookUseCase;
   readonly playSoundUseCase: PlaySoundUseCase;

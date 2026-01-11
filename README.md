@@ -71,9 +71,6 @@ Set up or repair the Claude Code integration hook
 ### `CC Ring: Uninstall Hook`
 Remove the Claude Code integration hook
 
-### `CC Ring: Show Status`
-Display current hook installation status and configuration
-
 ## Usage
 
 1. **Basic Setup**:
@@ -104,7 +101,6 @@ CC Ring integrates with Claude Code using VS Code's hook system. When Claude Cod
 **No sound playing?**
 - Check that `cc-ring.enabled` is set to `true`
 - Verify volume is not set to 0
-- Run `CC Ring: Show Status` to check hook installation
 - Try `CC Ring: Install/Reinstall Hook` to repair integration
 
 **Custom sound not working?**

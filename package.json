@@ -92,11 +92,6 @@
         "command": "cc-ring.uninstallHook",
         "title": "%command.uninstallHook%",
         "category": "%command.category%"
-      },
-      {
-        "command": "cc-ring.showStatus",
-        "title": "%command.showStatus%",
-        "category": "%command.category%"
       }
     ]
   },

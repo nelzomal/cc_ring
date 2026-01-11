@@ -1,7 +1,6 @@
 import * as path from "path";
 import { RuntimeConfig, InfraDeps, AppLayerDeps } from "./AppDeps";
 import { HookInstallationOrchestrator } from "@application/services/HookInstallationOrchestrator";
-import { CheckHookStatusUseCase } from "@application/usecases/CheckHookStatusUseCase";
 import { InstallHookUseCase } from "@application/usecases/InstallHookUseCase";
 import { UninstallHookUseCase } from "@application/usecases/UninstallHookUseCase";
 import { PlaySoundUseCase } from "@application/usecases/PlaySoundUseCase";
@@ -24,13 +23,6 @@ export function buildAppLayerDeps(
     runtime.settingsPath,
     runtime.coordinationLockPath,
     runtime.scriptRelativePath
-  );
-
-  // CheckHookStatusUseCase
-  const checkHookStatusUseCase = new CheckHookStatusUseCase(
-    infra.hookRepository,
-    infra.fileSystem,
-    runtime.scriptAbsolutePath
   );
 
   // Generate script content for InstallHookUseCase
@@ -65,7 +57,6 @@ export function buildAppLayerDeps(
 
   return {
     hookInstallationOrchestrator,
-    checkHookStatusUseCase,
     installHookUseCase,
     uninstallHookUseCase,
     playSoundUseCase,

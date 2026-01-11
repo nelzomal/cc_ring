@@ -11,6 +11,5 @@
   "command.category": "CC Ring",
   "command.selectCustomSound": "选择自定义声音文件",
   "command.installHook": "安装/重新安装钩子",
-  "command.uninstallHook": "卸载钩子",
-  "command.showStatus": "显示状态"
+  "command.uninstallHook": "卸载钩子"
 }

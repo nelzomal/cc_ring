@@ -11,6 +11,5 @@
   "command.category": "CC Ring",
   "command.selectCustomSound": "Select Custom Sound File",
   "command.installHook": "Install/Reinstall Hook",
-  "command.uninstallHook": "Uninstall Hook",
-  "command.showStatus": "Show Status"
+  "command.uninstallHook": "Uninstall Hook"
 }
