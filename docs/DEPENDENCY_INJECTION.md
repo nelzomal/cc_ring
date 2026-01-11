@@ -26,7 +26,6 @@ All infrastructure implementations that cross architectural boundaries **MUST** 
   - ✅ `IFileSystem` → `FileSystem`
 
 - **Services** (external services/APIs)
-  - ✅ `ISoundPlayer` → `AfplaySoundPlayer`
   - ✅ `IConfigProvider` → `VSCodeConfigProvider`
 
 - **Adapters** (external system integrations)
@@ -62,7 +61,6 @@ Use cases are typically concrete classes (no interface):
 - ✅ `InstallHookUseCase` (concrete)
 - ✅ `UninstallHookUseCase` (concrete)
 - ✅ `CheckHookStatusUseCase` (concrete)
-- ✅ `PlaySoundUseCase` (concrete)
 
 **Rationale:** Use cases represent business logic flows. They:
 - Are not swapped at runtime
@@ -233,31 +231,6 @@ Does this class interact with external systems?
 ```
 
 ## Examples
-
-### ✅ Good: Infrastructure Service with Interface
-
-```typescript
-// application/ports/ISoundPlayer.ts
-export interface ISoundPlayer {
-  play(config: SoundConfig): Promise<void>;
-}
-
-// infrastructure/services/AfplaySoundPlayer.ts
-@injectable()
-export class AfplaySoundPlayer implements ISoundPlayer {
-  async play(config: SoundConfig): Promise<void> {
-    // macOS-specific implementation
-  }
-}
-
-// container.ts
-container
-  .bind<ISoundPlayer>(TYPES.ISoundPlayer)
-  .to(AfplaySoundPlayer)
-  .inSingletonScope();
-```
-
-**Why?** This allows for platform-specific implementations (WmicSoundPlayer for Windows, etc.)
 
 ### ✅ Good: Use Case without Interface
 

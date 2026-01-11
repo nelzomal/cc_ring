@@ -1,7 +1,6 @@
 import { RuntimeConfig, InfraDeps } from "./AppDeps";
 import { FileSystem } from "@infrastructure/adapters/file-system/FileSystem";
 import { LockManager } from "@infrastructure/adapters/utilities/LockManager";
-import { AfplaySoundPlayer } from "@infrastructure/adapters/sound/AfplaySoundPlayer";
 import { VSCodeConfigProvider } from "@infrastructure/adapters/config/VSCodeConfigProvider";
 import { HookScriptGenerator } from "@infrastructure/services/HookScriptGenerator";
 import { ClaudeCodeHookRepository } from "@infrastructure/persistence/claude-settings/ClaudeCodeHookRepository";
@@ -18,9 +17,6 @@ export function buildInfraDeps(runtime: RuntimeConfig): InfraDeps {
 
   // LockManager has no dependencies
   const lockManager = new LockManager();
-
-  // AfplaySoundPlayer needs bundledSoundsDir
-  const soundPlayer = new AfplaySoundPlayer(runtime.bundledSoundsDir);
 
   // VSCodeConfigProvider needs extensionPath
   const configProvider = new VSCodeConfigProvider(runtime.extensionPath);
@@ -44,7 +40,6 @@ export function buildInfraDeps(runtime: RuntimeConfig): InfraDeps {
   return {
     fileSystem,
     hookRepository,
-    soundPlayer,
     configProvider,
     lockManager,
     hookScriptGenerator,
