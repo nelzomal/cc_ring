@@ -26,7 +26,7 @@ This template helps you systematically decide all architectural questions before
 
 ### 2.1 Domain Entities
 **Question:** Which aggregate roots or entities does this use case work with?
-- **Examples:** `HooksConfiguration`, `SoundConfig`
+- **Examples:** `HooksConfiguration`
 - **Answer:**
   - [ ] `___________________` (existing/new)
   - [ ] `___________________` (existing/new)
@@ -69,7 +69,7 @@ This template helps you systematically decide all architectural questions before
 
 ### 3.2 Service Ports
 **Question:** Which infrastructure services are needed?
-- **Examples:** `IFileSystem`, `ISoundPlayer`, `IConfigProvider`
+- **Examples:** `IFileSystem`, `IConfigProvider`
 - **Answer:**
   - [ ] `___________________` (existing)
   - [ ] `___________________` (new - requires interface + implementation)
@@ -145,7 +145,7 @@ export interface ___Result {
 ### 5.1 Domain Errors
 **Question:** What domain validation errors can occur?
 - **Pattern:** Thrown by entities/value objects during construction
-- **Examples:** `HookValidationError`, `SoundValidationError`
+- **Examples:** `HookValidationError`
 - **Answer:**
   - [ ] `___________________` (existing)
   - [ ] `___________________` (new - create in `src/domain/errors/`)
@@ -243,7 +243,6 @@ await this.___Repository.delete(entity);
 ### 7.3 Other Side Effects
 **Question:** Are there non-persistence side effects?
 - [ ] File system operations (via `IFileSystem`)
-- [ ] Sound playback (via `ISoundPlayer`)
 - [ ] External API calls
 - [ ] Event notifications
 
@@ -447,7 +446,7 @@ export class [UseCaseName]Error extends Error {
 
 **Can implement after answering:**
 - ✅ **2.1 Domain Entities** - Ports may reference entities (e.g., `HooksConfiguration`)
-- ✅ **2.2 Value Objects** - Ports may reference VOs (e.g., `SoundConfig`)
+- ✅ **2.2 Value Objects** - Ports may reference VOs
 - ✅ **4.1 Execute Method Parameters** - Defines what data port methods need
 - ✅ **4.2 Return Type** - Defines what data port methods return
 

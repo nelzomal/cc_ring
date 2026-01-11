@@ -2,14 +2,12 @@ import * as vscode from "vscode";
 import { IFileSystem } from "@application/ports/IFileSystem";
 import { IHookRepository } from "@application/ports/IHookRepository";
 import { IConfigProvider } from "@application/ports/IConfigProvider";
-import { ISoundPlayer } from "@application/ports/ISoundPlayer";
 import { ILockManager } from "@application/ports/ILockManager";
 import { HookScriptGenerator } from "@infrastructure/services/HookScriptGenerator";
 import { HookInstallationOrchestrator } from "@application/services/HookInstallationOrchestrator";
 import { CheckHookStatusUseCase } from "@application/usecases/CheckHookStatusUseCase";
 import { InstallHookUseCase } from "@application/usecases/InstallHookUseCase";
 import { UninstallHookUseCase } from "@application/usecases/UninstallHookUseCase";
-import { PlaySoundUseCase } from "@application/usecases/PlaySoundUseCase";
 import { InstallHookCommand } from "@presentation/vscode/commands/InstallHookCommand";
 import { UninstallHookCommand } from "@presentation/vscode/commands/UninstallHookCommand";
 
@@ -43,7 +41,6 @@ export interface VSCodeRuntime {
 export interface InfraDeps {
   readonly fileSystem: IFileSystem;
   readonly hookRepository: IHookRepository;
-  readonly soundPlayer: ISoundPlayer;
   readonly configProvider: IConfigProvider;
   readonly lockManager: ILockManager;
   readonly hookScriptGenerator: HookScriptGenerator;
@@ -57,7 +54,6 @@ export interface AppLayerDeps {
   readonly checkHookStatusUseCase: CheckHookStatusUseCase;
   readonly installHookUseCase: InstallHookUseCase;
   readonly uninstallHookUseCase: UninstallHookUseCase;
-  readonly playSoundUseCase: PlaySoundUseCase;
 }
 
 /**

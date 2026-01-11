@@ -4,7 +4,6 @@ import { HookInstallationOrchestrator } from "@application/services/HookInstalla
 import { CheckHookStatusUseCase } from "@application/usecases/CheckHookStatusUseCase";
 import { InstallHookUseCase } from "@application/usecases/InstallHookUseCase";
 import { UninstallHookUseCase } from "@application/usecases/UninstallHookUseCase";
-import { PlaySoundUseCase } from "@application/usecases/PlaySoundUseCase";
 
 /**
  * Build application layer dependencies
@@ -57,17 +56,10 @@ export function buildAppLayerDeps(
     runtime.configPath
   );
 
-  // PlaySoundUseCase
-  const playSoundUseCase = new PlaySoundUseCase(
-    infra.soundPlayer,
-    infra.configProvider
-  );
-
   return {
     hookInstallationOrchestrator,
     checkHookStatusUseCase,
     installHookUseCase,
     uninstallHookUseCase,
-    playSoundUseCase,
   };
 }
