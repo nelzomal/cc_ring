@@ -36,16 +36,11 @@ export class FileSystem implements IFileSystem {
     return fs.existsSync(filePath);
   }
 
-  // AI_FIXME: do we need both async and sync versions?
   async readFile(
     filePath: string,
     encoding: BufferEncoding = "utf-8"
   ): Promise<string> {
     return await fsPromises.readFile(filePath, encoding);
-  }
-
-  readFileSync(filePath: string, encoding: BufferEncoding = "utf-8"): string {
-    return fs.readFileSync(filePath, encoding);
   }
 
   // AI_FIXME do we need to expose this?

@@ -10,10 +10,10 @@ import { UninstallHookUseCase } from "@application/usecases/UninstallHookUseCase
  * This layer contains use cases and application services.
  * Dependencies: RuntimeConfig + InfraDeps
  */
-export function buildAppLayerDeps(
+export async function buildAppLayerDeps(
   runtime: RuntimeConfig,
   infra: InfraDeps
-): AppLayerDeps {
+): Promise<AppLayerDeps> {
   // HookInstallationOrchestrator - coordinates atomic multi-file operations
   const hookInstallationOrchestrator = new HookInstallationOrchestrator(
     infra.lockManager,
@@ -25,7 +25,7 @@ export function buildAppLayerDeps(
   );
 
   // Generate script content for InstallHookUseCase
-  const scriptContent = infra.hookScriptGenerator.generate({
+  const scriptContent = await infra.hookScriptGenerator.generate({
     configPath: runtime.configPath,
     defaultSoundPath: path.join(runtime.bundledSoundsDir, "complete.wav"),
     errorLogPath: runtime.errorLogPath,

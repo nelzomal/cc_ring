@@ -162,37 +162,6 @@ describe('Feature: File system operations', () => {
   });
 
   // ==========================================================================
-  // readFileSync() Tests
-  // ==========================================================================
-
-  describe('Scenario: Reading file content synchronously', () => {
-    describe('When file exists', () => {
-      it('should return file content synchronously', () => {
-        // Given a file with content
-        const content = 'Synchronous read';
-        fs.writeFileSync(testFilePath, content);
-
-        // When reading the file synchronously
-        const result = fileSystem.readFileSync(testFilePath);
-
-        // Then it should return the content
-        expect(result).toBe(content);
-      });
-    });
-
-    describe('When file does not exist', () => {
-      it('should throw error', () => {
-        // Given a file does not exist
-        // (no file created in beforeEach)
-
-        // When reading the file synchronously
-        // Then it should throw an error
-        expect(() => fileSystem.readFileSync(testFilePath)).toThrow();
-      });
-    });
-  });
-
-  // ==========================================================================
   // writeFileAtomic() Tests
   // ==========================================================================
 

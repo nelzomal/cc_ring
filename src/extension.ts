@@ -17,7 +17,7 @@ export async function activate(context: vscode.ExtensionContext) {
   console.log("CC Ring is now active");
 
   // Build typed dependency graph (composition root)
-  appDeps = buildAppDeps(context);
+  appDeps = await buildAppDeps(context);
 
   // Get command controllers from dependency graph
   installCommand = appDeps.presentation.installHookCommand;

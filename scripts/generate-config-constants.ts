@@ -10,7 +10,7 @@
  * Run: npm run generate
  */
 
-import * as fs from "fs";
+import * as fs from "fs/promises";
 import * as path from "path";
 
 const PACKAGE_JSON_PATH = path.join(__dirname, "..", "package.json");
@@ -53,13 +53,13 @@ function toScreamingSnakeCase(str: string): string {
     .toUpperCase();
 }
 
-function main() {
+async function main() {
   console.log("🔧 Generating TypeScript constants from package.json...\n");
 
   // Read package.json
   let packageJson: PackageJson;
   try {
-    const content = fs.readFileSync(PACKAGE_JSON_PATH, "utf8");
+    const content = await fs.readFile(PACKAGE_JSON_PATH, "utf8");
     packageJson = JSON.parse(content);
   } catch (error) {
     console.error(`❌ Failed to read package.json: ${(error as Error).message}`);
@@ -136,7 +136,7 @@ export type CommandIds = typeof COMMAND_IDS;
 
   // Write generated file
   try {
-    fs.writeFileSync(OUTPUT_PATH, tsContent);
+    await fs.writeFile(OUTPUT_PATH, tsContent);
   } catch (error) {
     console.error(`❌ Failed to write generated file: ${(error as Error).message}`);
     process.exit(1);
@@ -147,4 +147,7 @@ export type CommandIds = typeof COMMAND_IDS;
   console.log(`   - ${Object.keys(commandIds).length} command IDs`);
 }
 
-main();
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

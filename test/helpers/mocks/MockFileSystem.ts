@@ -10,7 +10,6 @@ export class MockFileSystem implements IFileSystem {
   public deleteFile = vi.fn<[string], Promise<void>>();
   public fileExists = vi.fn<[string], boolean>();
   public readFile = vi.fn<[string, BufferEncoding?], Promise<string>>();
-  public readFileSync = vi.fn<[string, BufferEncoding?], string>();
   public ensureDir = vi.fn<[string], Promise<void>>();
   public writeConfigFile = vi.fn<[string, object], Promise<void>>();
   public getFileMtime = vi.fn<[string], Promise<number>>();
@@ -23,7 +22,6 @@ export class MockFileSystem implements IFileSystem {
     this.deleteFile.mockReset();
     this.fileExists.mockReset();
     this.readFile.mockReset();
-    this.readFileSync.mockReset();
     this.ensureDir.mockReset();
     this.writeConfigFile.mockReset();
     this.getFileMtime.mockReset();

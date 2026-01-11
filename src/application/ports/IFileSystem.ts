@@ -33,11 +33,6 @@ export interface IFileSystem {
   readFile(path: string, encoding?: BufferEncoding): Promise<string>;
 
   /**
-   * Read file contents synchronously
-   */
-  readFileSync(path: string, encoding?: BufferEncoding): string;
-
-  /**
    * Ensure directory exists, create if needed
    */
   ensureDir(path: string): Promise<void>;

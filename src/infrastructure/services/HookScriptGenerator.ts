@@ -28,19 +28,19 @@ export class HookScriptGenerator {
     /**
      * Generate hook script content from template
      */
-    generate(config: HookScriptConfig): string {
-        const template = this.loadTemplate();
+    async generate(config: HookScriptConfig): Promise<string> {
+        const template = await this.loadTemplate();
         return this.substituteVariables(template, config);
     }
 
     /**
      * Load the template file
      */
-    private loadTemplate(): string {
+    private async loadTemplate(): Promise<string> {
         if (!this.fileWriter.fileExists(this.templatePath)) {
             throw new Error(`Template file not found: ${this.templatePath}`);
         }
-        return this.fileWriter.readFileSync(this.templatePath, 'utf8');
+        return this.fileWriter.readFile(this.templatePath, 'utf8');
     }
 
     /**

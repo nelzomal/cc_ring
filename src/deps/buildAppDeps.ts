@@ -59,7 +59,7 @@ function buildRuntimeConfig(context: vscode.ExtensionContext): RuntimeConfig {
  * 3. AppLayerDeps (use cases - depends on runtime + infra)
  * 4. PresentationDeps (commands - depends on app)
  */
-export function buildAppDeps(context: vscode.ExtensionContext): AppDeps {
+export async function buildAppDeps(context: vscode.ExtensionContext): Promise<AppDeps> {
   // Step 1: Build runtime config (pure computation, no I/O)
   const runtime = buildRuntimeConfig(context);
 
@@ -68,7 +68,7 @@ export function buildAppDeps(context: vscode.ExtensionContext): AppDeps {
 
   // Step 3: Build layers in dependency order
   const infra = buildInfraDeps(runtime);
-  const app = buildAppLayerDeps(runtime, infra);
+  const app = await buildAppLayerDeps(runtime, infra);
   const presentation = buildPresentationDeps(app);
 
   return {

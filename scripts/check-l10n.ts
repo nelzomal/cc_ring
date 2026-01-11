@@ -9,6 +9,7 @@
 
 import * as ts from 'typescript';
 import * as fs from 'fs';
+import * as fsPromises from 'fs/promises';
 import * as path from 'path';
 
 // Configuration
@@ -22,9 +23,9 @@ interface StringLocation {
 }
 
 // Read the bundle file
-function loadBundle(): Record<string, string> {
+async function loadBundle(): Promise<Record<string, string>> {
     try {
-        const content = fs.readFileSync(BUNDLE_PATH, 'utf8');
+        const content = await fsPromises.readFile(BUNDLE_PATH, 'utf8');
         return JSON.parse(content);
     } catch (error) {
         console.error(`❌ Failed to load bundle file: ${(error as Error).message}`);
@@ -59,9 +60,9 @@ function getSourceFiles(dir: string): string[] {
 }
 
 // Extract l10n strings from a TypeScript file
-function extractL10nStrings(filePath: string): Map<string, StringLocation> {
+async function extractL10nStrings(filePath: string): Promise<Map<string, StringLocation>> {
     const strings = new Map<string, StringLocation>();
-    const sourceCode = fs.readFileSync(filePath, 'utf8');
+    const sourceCode = await fsPromises.readFile(filePath, 'utf8');
     const sourceFile = ts.createSourceFile(
         filePath,
         sourceCode,
@@ -115,17 +116,17 @@ function extractL10nStrings(filePath: string): Map<string, StringLocation> {
 }
 
 // Main validation
-function main() {
+async function main() {
     console.log('🔍 Checking l10n string coverage using TypeScript compiler API...\n');
 
-    const bundle = loadBundle();
+    const bundle = await loadBundle();
     const bundleKeys = new Set(Object.keys(bundle));
     const allStrings = new Map<string, StringLocation>();
 
     // Collect all l10n strings from source files
     const sourceFiles = getSourceFiles(SRC_DIR);
     for (const file of sourceFiles) {
-        const fileStrings = extractL10nStrings(file);
+        const fileStrings = await extractL10nStrings(file);
         for (const [string, location] of fileStrings.entries()) {
             // Use first occurrence for reporting
             if (!allStrings.has(string)) {
@@ -191,4 +192,7 @@ function main() {
     }
 }
 
-main();
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
