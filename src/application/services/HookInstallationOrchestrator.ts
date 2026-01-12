@@ -4,22 +4,6 @@ import { IHookRepository } from "@application/ports/IHookRepository";
 import { ILockManager } from "@application/ports/ILockManager";
 
 /**
- * Error thrown when settings.json is modified by an external process
- * during hook installation/uninstallation.
- */
-// AI_FIXME: remove HookConflictError
-export class HookConflictError extends Error {
-  constructor() {
-    super(
-      "settings.json was modified by another process during the operation. " +
-        "This may be Claude Code CLI or manual edits. " +
-        "Please retry the operation."
-    );
-    this.name = "HookConflictError";
-  }
-}
-
-/**
  * Parameters for hook installation operation.
  */
 export interface InstallParams {
@@ -82,8 +66,7 @@ export class HookInstallationOrchestrator {
    * 7. Release lock
    *
    * @param params - Installation parameters
-   * @throws HookConflictError if settings.json modified externally
-   * @throws HookInstallationError on any other failure
+   * @throws HookInstallationError on failure (including external modification conflicts)
    */
   async install(params: InstallParams): Promise<void> {
     return this.lockManager.withLock(this.coordinationLockPath, async () => {
@@ -117,7 +100,11 @@ export class HookInstallationOrchestrator {
           currentMtime !== null &&
           currentMtime !== beforeMtime
         ) {
-          throw new HookConflictError();
+          throw new HookInstallationError(
+            "settings.json was modified by another process during the operation. " +
+              "This may be Claude Code CLI or manual edits. " +
+              "Please retry the operation."
+          );
         }
 
         // Step 4: Write settings.json (uses repository's own lock)
@@ -134,10 +121,6 @@ export class HookInstallationOrchestrator {
           params.scriptPath
         );
 
-        // Re-throw with appropriate error type
-        if (error instanceof HookConflictError) {
-          throw new HookInstallationError(error.message, error);
-        }
         throw error;
       }
     });
