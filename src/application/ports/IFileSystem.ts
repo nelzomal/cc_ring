@@ -8,13 +8,16 @@
  */
 export interface IFileSystem {
   /**
+   * Atomically write content to a file.
+   *
    * @param options.createIfMissing Must be true - documents that file will be created if missing
+   * @param options.overwrite Must be true - documents that existing file will be replaced
    * @param options.mode Optional file mode (permissions) to set, e.g., 0o755 for executable
    */
   writeFileAtomic(
     path: string,
     content: string,
-    options: { createIfMissing: true; mode?: number }
+    options: { createIfMissing: true; overwrite: true; mode?: number }
   ): Promise<void>;
 
   /**
@@ -23,29 +26,15 @@ export interface IFileSystem {
   deleteFile(path: string): Promise<void>;
 
   /**
-   * Check if a file exists
+   * Read file contents.
+   * Returns null if file does not exist.
    */
-  fileExists(path: string): boolean;
+  readFile(path: string, encoding?: BufferEncoding): Promise<string | null>;
 
   /**
-   * Read file contents
+   * Get file modification time in milliseconds since epoch.
+   * Returns null if file does not exist.
+   * Used for conflict detection.
    */
-  readFile(path: string, encoding?: BufferEncoding): Promise<string>;
-
-  /**
-   * Ensure directory exists, create if needed
-   */
-  ensureDir(path: string): Promise<void>;
-
-  /**
-   * Write JSON content to a file atomically
-   * Serializes object to JSON with proper formatting
-   */
-  writeConfigFile(path: string, content: object): Promise<void>;
-
-  /**
-   * Get file modification time in milliseconds since epoch
-   * Used for conflict detection
-   */
-  getFileMtime(path: string): Promise<number>;
+  getFileMtime(path: string): Promise<number | null>;
 }

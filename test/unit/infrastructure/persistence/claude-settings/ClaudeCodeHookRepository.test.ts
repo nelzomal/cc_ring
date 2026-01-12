@@ -74,7 +74,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
     describe("When settings.json is empty", () => {
       it("should return false", async () => {
         // Given settings.json exists but is empty
-        await fileSystem.writeFileAtomic(settingsPath, "{}", { createIfMissing: true });
+        await fileSystem.writeFileAtomic(settingsPath, "{}", { createIfMissing: true, overwrite: true });
 
         // When checking if hooks are installed
         const result = await repository.isInstalled();
@@ -92,7 +92,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
           JSON.stringify({
             someOtherSetting: "value",
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking if hooks are installed
@@ -123,7 +123,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               ],
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking if hooks are installed
@@ -152,7 +152,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               ],
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking if hooks are installed
@@ -184,7 +184,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               ],
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking if hooks are installed
@@ -214,7 +214,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               ],
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking if hooks are installed
@@ -246,7 +246,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               ],
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking if hooks are installed
@@ -276,7 +276,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               ],
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking if hooks are installed
@@ -319,7 +319,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               ],
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking if hooks are installed
@@ -351,7 +351,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               ],
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking if hooks are installed
@@ -377,11 +377,11 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
         await repository.install(scriptPath);
 
         // Then settings.json should be created
-        expect(fileSystem.fileExists(settingsPath)).toBe(true);
+        expect(fs.existsSync(settingsPath)).toBe(true);
 
         // And it should contain all 7 SUPPORTED_HOOKS
         const content = await fileSystem.readFile(settingsPath);
-        const settings = JSON.parse(content);
+        const settings = JSON.parse(content!);
 
         // 1 Stop hook
         expect(settings.hooks.Stop).toHaveLength(1);
@@ -424,14 +424,14 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
     describe("When settings.json is empty", () => {
       it("should install all 7 hooks", async () => {
         // Given settings.json exists but is empty
-        await fileSystem.writeFileAtomic(settingsPath, "{}", { createIfMissing: true });
+        await fileSystem.writeFileAtomic(settingsPath, "{}", { createIfMissing: true, overwrite: true });
 
         // When installing hooks
         await repository.install(scriptPath);
 
         // Then it should contain all 7 hooks
         const content = await fileSystem.readFile(settingsPath);
-        const settings = JSON.parse(content);
+        const settings = JSON.parse(content!);
 
         expect(settings.hooks.Stop).toHaveLength(1);
         expect(settings.hooks.Notification).toHaveLength(4);
@@ -460,7 +460,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               ],
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When installing CC Ring hooks
@@ -468,7 +468,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
 
         // Then existing hooks should be preserved
         const content = await fileSystem.readFile(settingsPath);
-        const settings = JSON.parse(content);
+        const settings = JSON.parse(content!);
 
         // Should have both existing and CC Ring Stop hooks
         expect(settings.hooks.Stop.length).toBeGreaterThan(1);
@@ -498,7 +498,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
 
         // Then there should be no duplicates
         const content = await fileSystem.readFile(settingsPath);
-        const settings = JSON.parse(content);
+        const settings = JSON.parse(content!);
 
         // Should still have exactly 7 hooks total
         expect(settings.hooks.Stop).toHaveLength(1);
@@ -529,7 +529,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               nested: true,
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When installing hooks
@@ -537,7 +537,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
 
         // Then other settings should be preserved
         const content = await fileSystem.readFile(settingsPath);
-        const settings = JSON.parse(content);
+        const settings = JSON.parse(content!);
 
         expect(settings.someOtherSetting).toBe("important value");
         expect(settings.anotherSetting).toEqual({ nested: true });
@@ -565,7 +565,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
     describe("When settings.json has no hooks", () => {
       it("should complete without error", async () => {
         // Given settings.json has no hooks
-        await fileSystem.writeFileAtomic(settingsPath, "{}", { createIfMissing: true });
+        await fileSystem.writeFileAtomic(settingsPath, "{}", { createIfMissing: true, overwrite: true });
 
         // When uninstalling hooks
         // Then it should not throw
@@ -573,7 +573,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
 
         // And file should still be valid JSON
         const content = await fileSystem.readFile(settingsPath);
-        const settings = JSON.parse(content);
+        const settings = JSON.parse(content!);
         expect(settings).toEqual({});
       });
     });
@@ -588,7 +588,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
 
         // Then hooks property should be removed (cleanup empty structures)
         const content = await fileSystem.readFile(settingsPath);
-        const settings = JSON.parse(content);
+        const settings = JSON.parse(content!);
         expect(settings.hooks).toBeUndefined();
       });
     });
@@ -606,7 +606,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
 
         // Add non-CC Ring hooks manually
         const content = await fileSystem.readFile(settingsPath);
-        const settings = JSON.parse(content);
+        const settings = JSON.parse(content!);
         settings.hooks.Stop.push({ hooks: [existingHook] });
         settings.hooks.Notification.push({
           matcher: "custom_event",
@@ -615,7 +615,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
         await fileSystem.writeFileAtomic(
           settingsPath,
           JSON.stringify(settings, null, 2),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When uninstalling CC Ring hooks
@@ -623,7 +623,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
 
         // Then only non-CC Ring hooks should remain
         const updatedContent = await fileSystem.readFile(settingsPath);
-        const updatedSettings = JSON.parse(updatedContent);
+        const updatedSettings = JSON.parse(updatedContent!);
 
         // Should have only the non-CC Ring hooks
         expect(updatedSettings.hooks.Stop).toHaveLength(1);
@@ -650,7 +650,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
 
         // Then empty arrays should be cleaned up
         const content = await fileSystem.readFile(settingsPath);
-        const settings = JSON.parse(content);
+        const settings = JSON.parse(content!);
 
         expect(settings.hooks).toBeUndefined();
       });
@@ -664,7 +664,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
           JSON.stringify({
             someOtherSetting: "important value",
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
         await repository.install(scriptPath);
 
@@ -673,7 +673,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
 
         // Then other settings should be preserved
         const content = await fileSystem.readFile(settingsPath);
-        const settings = JSON.parse(content);
+        const settings = JSON.parse(content!);
 
         expect(settings.someOtherSetting).toBe("important value");
       });
@@ -691,7 +691,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
         await fileSystem.writeFileAtomic(
           settingsPath,
           "{ invalid json content }",
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking installation status
@@ -711,7 +711,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
         await fileSystem.writeFileAtomic(
           settingsPath,
           '{"hooks": {}, "hooks": {}}',
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking installation status
@@ -737,7 +737,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               ],
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking installation status
@@ -766,7 +766,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               ],
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking installation status
@@ -795,7 +795,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               ],
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking installation status
@@ -824,7 +824,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               ],
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking installation status
@@ -842,7 +842,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
   describe("Scenario: Concurrent access with file locking", () => {
     it("should handle concurrent isInstalled calls", async () => {
       // Given settings.json exists
-      await fileSystem.writeFileAtomic(settingsPath, "{}", { createIfMissing: true });
+      await fileSystem.writeFileAtomic(settingsPath, "{}", { createIfMissing: true, overwrite: true });
 
       // When multiple concurrent isInstalled calls are made
       const promises = Array(5)
@@ -871,7 +871,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
 
       // And there should be no duplicate hooks
       const content = await fileSystem.readFile(settingsPath);
-      const settings = JSON.parse(content);
+      const settings = JSON.parse(content!);
       expect(settings.hooks.Stop).toHaveLength(1);
       expect(settings.hooks.Notification).toHaveLength(4);
       expect(settings.hooks.PreToolUse).toHaveLength(2);
@@ -895,7 +895,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
 
       // And settings.json should be in a consistent state (either installed or not)
       const content = await fileSystem.readFile(settingsPath);
-      const settings = JSON.parse(content);
+      const settings = JSON.parse(content!);
 
       // File should be valid JSON (not corrupted)
       expect(settings).toBeDefined();
@@ -928,7 +928,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               ],
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking if hooks are installed
@@ -957,7 +957,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               ],
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking if hooks are installed
@@ -986,7 +986,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
               ],
             },
           }),
-          { createIfMissing: true }
+          { createIfMissing: true, overwrite: true }
         );
 
         // When checking if hooks are installed
@@ -1013,7 +1013,7 @@ describe("Feature: Managing CC Ring hooks in Claude Code settings.json", () => {
 
         // Then the command should be stored exactly as provided
         const content = await fileSystem.readFile(settingsPath);
-        const settings = JSON.parse(content);
+        const settings = JSON.parse(content!);
 
         expect(settings.hooks.Stop[0].hooks[0].command).toBe(relativePath);
       });

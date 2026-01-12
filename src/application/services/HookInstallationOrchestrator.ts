@@ -95,9 +95,10 @@ export class HookInstallationOrchestrator {
 
       try {
         // Step 1: Write config file atomically
-        await this.fileWriter.writeConfigFile(
+        await this.fileWriter.writeFileAtomic(
           params.configPath,
-          params.configContent
+          JSON.stringify(params.configContent, null, 2),
+          { createIfMissing: true, overwrite: true }
         );
         configWritten = true;
 
@@ -105,7 +106,7 @@ export class HookInstallationOrchestrator {
         await this.fileWriter.writeFileAtomic(
           params.scriptPath,
           params.scriptContent,
-          { createIfMissing: true, mode: 0o755 }
+          { createIfMissing: true, overwrite: true, mode: 0o755 }
         );
         scriptWritten = true;
 
@@ -171,15 +172,7 @@ export class HookInstallationOrchestrator {
    * Returns null if file doesn't exist.
    */
   private async getSettingsMtimeSafe(): Promise<number | null> {
-    try {
-      if (!this.fileWriter.fileExists(this.settingsPath)) {
-        return null;
-      }
-      return await this.fileWriter.getFileMtime(this.settingsPath);
-    } catch (error) {
-      // File may have been deleted between exists check and mtime read
-      return null;
-    }
+    return this.fileWriter.getFileMtime(this.settingsPath);
   }
 
   /**

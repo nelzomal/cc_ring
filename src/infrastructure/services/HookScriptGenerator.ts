@@ -37,10 +37,11 @@ export class HookScriptGenerator {
      * Load the template file
      */
     private async loadTemplate(): Promise<string> {
-        if (!this.fileWriter.fileExists(this.templatePath)) {
+        const content = await this.fileWriter.readFile(this.templatePath, 'utf8');
+        if (content === null) {
             throw new Error(`Template file not found: ${this.templatePath}`);
         }
-        return this.fileWriter.readFile(this.templatePath, 'utf8');
+        return content;
     }
 
     /**

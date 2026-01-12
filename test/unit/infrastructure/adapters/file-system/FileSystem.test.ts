@@ -32,64 +32,6 @@ describe('Feature: File system operations', () => {
   });
 
   // ==========================================================================
-  // fileExists() Tests
-  // ==========================================================================
-
-  describe('Scenario: Checking file existence', () => {
-    describe('When file exists', () => {
-      it('should return true', () => {
-        // Given a file exists
-        fs.writeFileSync(testFilePath, 'test content');
-
-        // When checking if file exists
-        const result = fileSystem.fileExists(testFilePath);
-
-        // Then it should return true
-        expect(result).toBe(true);
-      });
-    });
-
-    describe('When file does not exist', () => {
-      it('should return false', () => {
-        // Given a file does not exist
-        // (no file created in beforeEach)
-
-        // When checking if file exists
-        const result = fileSystem.fileExists(testFilePath);
-
-        // Then it should return false
-        expect(result).toBe(false);
-      });
-    });
-
-    describe('When directory exists instead of file', () => {
-      it('should return true (directory is considered existing path)', () => {
-        // Given a directory exists at the path
-        fs.mkdirSync(testFilePath);
-
-        // When checking if path exists
-        const result = fileSystem.fileExists(testFilePath);
-
-        // Then it should return true (existsSync returns true for directories)
-        expect(result).toBe(true);
-      });
-    });
-
-    describe('When path is in non-existent directory', () => {
-      it('should return false', () => {
-        // Given a path in a non-existent directory
-        const nonExistentPath = path.join(tempDir, 'nonexistent', 'file.txt');
-
-        // When checking if file exists
-        const result = fileSystem.fileExists(nonExistentPath);
-
-        // Then it should return false
-        expect(result).toBe(false);
-      });
-    });
-  });
-
-  // ==========================================================================
   // readFile() Tests
   // ==========================================================================
 
@@ -136,13 +78,15 @@ describe('Feature: File system operations', () => {
     });
 
     describe('When file does not exist', () => {
-      it('should throw error', async () => {
+      it('should return null', async () => {
         // Given a file does not exist
         // (no file created in beforeEach)
 
         // When reading the file
-        // Then it should throw an error
-        await expect(fileSystem.readFile(testFilePath)).rejects.toThrow();
+        const result = await fileSystem.readFile(testFilePath);
+
+        // Then it should return null
+        expect(result).toBeNull();
       });
     });
 
@@ -166,7 +110,7 @@ describe('Feature: File system operations', () => {
   // ==========================================================================
 
   describe('Scenario: Writing file atomically', () => {
-    describe('When writing to new file', () => {
+    describe('When writing string to new file', () => {
       it('should create file with content', async () => {
         // Given a file does not exist
         // (no file created in beforeEach)
@@ -174,7 +118,7 @@ describe('Feature: File system operations', () => {
         const content = 'New file content';
 
         // When writing atomically
-        await fileSystem.writeFileAtomic(testFilePath, content, { createIfMissing: true });
+        await fileSystem.writeFileAtomic(testFilePath, content, { createIfMissing: true, overwrite: true });
 
         // Then file should exist
         expect(fs.existsSync(testFilePath)).toBe(true);
@@ -194,7 +138,7 @@ describe('Feature: File system operations', () => {
         const newContent = 'New content';
 
         // When writing atomically
-        await fileSystem.writeFileAtomic(testFilePath, newContent, { createIfMissing: true });
+        await fileSystem.writeFileAtomic(testFilePath, newContent, { createIfMissing: true, overwrite: true });
 
         // Then content should be updated
         const writtenContent = fs.readFileSync(testFilePath, 'utf-8');
@@ -211,7 +155,7 @@ describe('Feature: File system operations', () => {
         const content = 'Nested file content';
 
         // When writing atomically
-        await fileSystem.writeFileAtomic(nestedPath, content, { createIfMissing: true });
+        await fileSystem.writeFileAtomic(nestedPath, content, { createIfMissing: true, overwrite: true });
 
         // Then parent directories should be created
         expect(fs.existsSync(path.dirname(nestedPath))).toBe(true);
@@ -229,7 +173,7 @@ describe('Feature: File system operations', () => {
         const content = 'File with permissions';
 
         // When writing with mode 0o755 (rwxr-xr-x)
-        await fileSystem.writeFileAtomic(testFilePath, content, { createIfMissing: true, mode: 0o755 });
+        await fileSystem.writeFileAtomic(testFilePath, content, { createIfMissing: true, overwrite: true, mode: 0o755 });
 
         // Then file should have correct permissions
         const stats = fs.statSync(testFilePath);
@@ -245,7 +189,7 @@ describe('Feature: File system operations', () => {
         const content = 'UTF-8: 你好 こんにちは 🎉';
 
         // When writing atomically
-        await fileSystem.writeFileAtomic(testFilePath, content, { createIfMissing: true });
+        await fileSystem.writeFileAtomic(testFilePath, content, { createIfMissing: true, overwrite: true });
 
         // Then content should be preserved correctly
         const writtenContent = fs.readFileSync(testFilePath, 'utf-8');
@@ -259,7 +203,7 @@ describe('Feature: File system operations', () => {
         const content = 'x'.repeat(1024 * 1024);
 
         // When writing atomically
-        await fileSystem.writeFileAtomic(testFilePath, content, { createIfMissing: true });
+        await fileSystem.writeFileAtomic(testFilePath, content, { createIfMissing: true, overwrite: true });
 
         // Then content should be written correctly
         const writtenContent = fs.readFileSync(testFilePath, 'utf-8');
@@ -273,7 +217,7 @@ describe('Feature: File system operations', () => {
         // Given multiple writes to the same file
         const writes = Array(10)
           .fill(null)
-          .map((_, i) => fileSystem.writeFileAtomic(testFilePath, `Write ${i}`, { createIfMissing: true }));
+          .map((_, i) => fileSystem.writeFileAtomic(testFilePath, `Write ${i}`, { createIfMissing: true, overwrite: true }));
 
         // When all writes complete
         await Promise.all(writes);
@@ -331,151 +275,6 @@ describe('Feature: File system operations', () => {
   });
 
   // ==========================================================================
-  // ensureDir() Tests
-  // ==========================================================================
-
-  describe('Scenario: Ensuring directory exists', () => {
-    describe('When directory does not exist', () => {
-      it('should create the directory', async () => {
-        // Given a directory does not exist
-        const dirPath = path.join(tempDir, 'new-dir');
-
-        // When ensuring directory exists
-        await fileSystem.ensureDir(dirPath);
-
-        // Then directory should exist
-        expect(fs.existsSync(dirPath)).toBe(true);
-        expect(fs.statSync(dirPath).isDirectory()).toBe(true);
-      });
-    });
-
-    describe('When directory already exists', () => {
-      it('should complete without error', async () => {
-        // Given a directory exists
-        const dirPath = path.join(tempDir, 'existing-dir');
-        fs.mkdirSync(dirPath);
-
-        // When ensuring directory exists
-        // Then it should not throw
-        await expect(fileSystem.ensureDir(dirPath)).resolves.toBeUndefined();
-
-        // And directory should still exist
-        expect(fs.existsSync(dirPath)).toBe(true);
-      });
-    });
-
-    describe('When creating nested directories', () => {
-      it('should create all parent directories', async () => {
-        // Given nested directory path does not exist
-        const nestedPath = path.join(tempDir, 'level1', 'level2', 'level3');
-
-        // When ensuring nested directory exists
-        await fileSystem.ensureDir(nestedPath);
-
-        // Then all directories should be created
-        expect(fs.existsSync(nestedPath)).toBe(true);
-        expect(fs.existsSync(path.join(tempDir, 'level1'))).toBe(true);
-        expect(fs.existsSync(path.join(tempDir, 'level1', 'level2'))).toBe(true);
-      });
-    });
-  });
-
-  // ==========================================================================
-  // writeConfigFile() Tests
-  // ==========================================================================
-
-  describe('Scenario: Writing JSON configuration files', () => {
-    describe('When writing object as JSON', () => {
-      it('should serialize and write JSON with formatting', async () => {
-        // Given a configuration object
-        const config = {
-          name: 'CC Ring',
-          version: '1.0.0',
-          settings: {
-            enabled: true,
-            volume: 100,
-          },
-        };
-
-        // When writing config file
-        await fileSystem.writeConfigFile(testFilePath, config);
-
-        // Then file should exist
-        expect(fs.existsSync(testFilePath)).toBe(true);
-
-        // And content should be formatted JSON
-        const content = fs.readFileSync(testFilePath, 'utf-8');
-        const parsed = JSON.parse(content);
-        expect(parsed).toEqual(config);
-
-        // And should have indentation (pretty printed)
-        expect(content).toContain('  '); // 2-space indentation
-      });
-    });
-
-    describe('When writing complex nested object', () => {
-      it('should handle nested structures', async () => {
-        // Given a complex nested object
-        const config = {
-          hooks: {
-            Stop: [
-              {
-                hooks: [
-                  {
-                    type: 'command',
-                    command: '/path/to/script.sh',
-                    timeout: 5,
-                  },
-                ],
-              },
-            ],
-          },
-        };
-
-        // When writing config file
-        await fileSystem.writeConfigFile(testFilePath, config);
-
-        // Then content should be correctly serialized
-        const content = fs.readFileSync(testFilePath, 'utf-8');
-        const parsed = JSON.parse(content);
-        expect(parsed).toEqual(config);
-      });
-    });
-
-    describe('When writing empty object', () => {
-      it('should write empty JSON object', async () => {
-        // Given an empty object
-        const config = {};
-
-        // When writing config file
-        await fileSystem.writeConfigFile(testFilePath, config);
-
-        // Then file should contain empty object
-        const content = fs.readFileSync(testFilePath, 'utf-8');
-        expect(content.trim()).toBe('{}');
-      });
-    });
-
-    describe('When parent directory does not exist', () => {
-      it('should create directory and write file', async () => {
-        // Given parent directory does not exist
-        const configPath = path.join(tempDir, 'config', 'settings.json');
-
-        const config = { test: true };
-
-        // When writing config file
-        await fileSystem.writeConfigFile(configPath, config);
-
-        // Then directory and file should be created
-        expect(fs.existsSync(configPath)).toBe(true);
-        const content = fs.readFileSync(configPath, 'utf-8');
-        const parsed = JSON.parse(content);
-        expect(parsed).toEqual(config);
-      });
-    });
-  });
-
-  // ==========================================================================
   // getFileMtime() Tests
   // ==========================================================================
 
@@ -492,6 +291,7 @@ describe('Feature: File system operations', () => {
         const afterTime = Date.now();
 
         // Then it should return a valid timestamp
+        expect(mtime).not.toBeNull();
         expect(mtime).toBeGreaterThan(0);
         expect(mtime).toBeGreaterThanOrEqual(beforeTime - 1000); // Allow 1s clock skew
         expect(mtime).toBeLessThanOrEqual(afterTime + 1000);
@@ -512,18 +312,20 @@ describe('Feature: File system operations', () => {
         const newMtime = await fileSystem.getFileMtime(testFilePath);
 
         // Then modification time should be updated
-        expect(newMtime).toBeGreaterThan(originalMtime);
+        expect(newMtime).toBeGreaterThan(originalMtime!);
       });
     });
 
     describe('When file does not exist', () => {
-      it('should throw error', async () => {
+      it('should return null', async () => {
         // Given a file does not exist
         // (no file created in beforeEach)
 
         // When getting modification time
-        // Then it should throw an error
-        await expect(fileSystem.getFileMtime(testFilePath)).rejects.toThrow();
+        const result = await fileSystem.getFileMtime(testFilePath);
+
+        // Then it should return null
+        expect(result).toBeNull();
       });
     });
   });
@@ -541,7 +343,7 @@ describe('Feature: File system operations', () => {
           fs.chmodSync(testFilePath, 0o000); // No permissions
 
           // When reading the file
-          // Then it should throw an error
+          // Then it should throw an error (not return null - permission denied is not ENOENT)
           await expect(fileSystem.readFile(testFilePath)).rejects.toThrow();
 
           // Cleanup: restore permissions for deletion
@@ -562,7 +364,7 @@ describe('Feature: File system operations', () => {
 
           // When writing to read-only directory
           // Then it should throw an error
-          await expect(fileSystem.writeFileAtomic(filePath, 'content', { createIfMissing: true })).rejects.toThrow();
+          await expect(fileSystem.writeFileAtomic(filePath, 'content', { createIfMissing: true, overwrite: true })).rejects.toThrow();
 
           // Cleanup: restore permissions
           fs.chmodSync(readOnlyDir, 0o755);

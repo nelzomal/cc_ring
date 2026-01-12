@@ -271,14 +271,10 @@ export async function readSettingsInfraDTO(
   fileSystem: IFileSystem,
   settingsPath: string
 ): Promise<ClaudeCodeSettingsDTO> {
-  if (!fileSystem.fileExists(settingsPath)) {
-    return {};
-  }
-
   const content = await fileSystem.readFile(settingsPath, "utf8");
 
-  // Handle empty file
-  if (!content || content.trim() === "") {
+  // Handle missing or empty file
+  if (content === null || content.trim() === "") {
     return {};
   }
 
@@ -315,5 +311,6 @@ export async function writeSettingsInfraDTO(
   const content = JSON.stringify(infraDTO, null, 2);
   await fileSystem.writeFileAtomic(settingsPath, content, {
     createIfMissing: true,
+    overwrite: true,
   });
 }
